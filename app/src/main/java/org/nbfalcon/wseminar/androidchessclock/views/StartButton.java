@@ -9,8 +9,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageButton;
 import org.jetbrains.annotations.NotNull;
+import org.nbfalcon.wseminar.androidchessclock.R;
 
 public class StartButton extends AppCompatImageButton {
+    {
+        setState(State.INIT);
+    }
+
     public StartButton(@NonNull @NotNull Context context) {
         super(context);
     }
@@ -23,21 +28,20 @@ public class StartButton extends AppCompatImageButton {
         super(context, attrs, defStyleAttr);
     }
 
-    {
-        setState(State.START);
-    }
-
     public void setState(@NotNull State newState) {
         @DrawableRes int whichIconRes = -1;
         switch (newState) {
+            case INIT:
+                whichIconRes = R.drawable.ic_material_not_started;
+                break;
             case START:
-                whichIconRes = android.R.drawable.btn_star;
+                whichIconRes = R.drawable.ic_material_play;
                 break;
             case STOP:
-                whichIconRes = android.R.drawable.btn_plus;
+                whichIconRes = R.drawable.ic_material_pause;
                 break;
             case RESTART:
-                whichIconRes = android.R.drawable.btn_minus;
+                whichIconRes = R.drawable.ic_material_restart_alt;
                 break;
         }
         Drawable actualIcon = AppCompatResources.getDrawable(getContext(), whichIconRes);
@@ -45,6 +49,6 @@ public class StartButton extends AppCompatImageButton {
     }
 
     public enum State {
-        START, STOP, RESTART
+        INIT, START, STOP, RESTART
     }
 }
