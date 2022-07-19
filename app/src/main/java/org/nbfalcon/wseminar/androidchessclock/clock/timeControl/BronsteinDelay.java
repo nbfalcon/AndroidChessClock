@@ -12,13 +12,13 @@ public class BronsteinDelay implements TimeControl {
     }
 
     @Override
-    public void update(long elapsedTime) {
+    public void onUpdate(long elapsedTime) {
         timeLeft -= elapsedTime;
         elapsedThisMove += elapsedTime;
     }
 
     @Override
-    public void moveFinished() {
+    public void onMoveFinished() {
         elapsedThisMove = 0;
         timeLeft += Math.min(increment, elapsedThisMove);
     }

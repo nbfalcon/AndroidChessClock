@@ -30,7 +30,7 @@ public class ChessClockActivity extends AppCompatActivity {
         view.setupCallbacks();
 
         // FIXME
-        theClock.setClocks(new ClockPair(new FisherIncrement(300 * 1000, 0), new FisherIncrement(300 * 1000, 0)));
+        theClock.setClocks(new ClockPair(new FisherIncrement(3 * 1000, 0), new FisherIncrement(300 * 1000, 0)));
         theClock.init();
     }
 

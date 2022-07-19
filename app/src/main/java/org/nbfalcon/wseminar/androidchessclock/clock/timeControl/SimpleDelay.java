@@ -12,7 +12,7 @@ public class SimpleDelay implements TimeControl {
     }
 
     @Override
-    public void update(long elapsedTime) {
+    public void onUpdate(long elapsedTime) {
         // If the increment is elapsed, we start subtracting from the time
         elapsedThisMove += elapsedTime;
         if (elapsedThisMove > increment) {
@@ -22,7 +22,7 @@ public class SimpleDelay implements TimeControl {
     }
 
     @Override
-    public void moveFinished() {
+    public void onMoveFinished() {
         elapsedThisMove = 0;
     }
 

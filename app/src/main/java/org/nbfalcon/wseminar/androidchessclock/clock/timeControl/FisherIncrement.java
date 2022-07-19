@@ -10,12 +10,12 @@ public class FisherIncrement implements TimeControl {
     }
 
     @Override
-    public void update(long elapsedTime) {
+    public void onUpdate(long elapsedTime) {
         timeLeft -= elapsedTime;
     }
 
     @Override
-    public void moveFinished() {
+    public void onMoveFinished() {
         timeLeft += increment;
     }
 

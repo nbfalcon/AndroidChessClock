@@ -25,6 +25,8 @@ public class TimerView extends AppCompatTextView {
     }
 
     private static String formatTime(long seconds) {
+        // FIXME: this is probably broken
+
         final long s = seconds % 60;
         seconds /= 60;
         final long m = seconds % 60;
@@ -33,7 +35,7 @@ public class TimerView extends AppCompatTextView {
         seconds /= 24;
         final long d = seconds;
 
-        String timeString = m + ":" + s;
+        String timeString = m + ":" + (s < 10 ? "0" + s : s);
         if (h > 0) timeString = h + ":" + timeString;
         if (d > 0) timeString = d + "d " + timeString;
 

@@ -63,14 +63,14 @@ public class ChessClock implements Timer.TimerHandler {
     }
 
     public void onReset() {
-        timer.onKillTimer();
+        assert currentState == State.GAME_OVER;
         setState(State.INIT);
     }
 
     public void onTick(long elapsedMS) {
         if (currentState == State.TICKING || currentState == State.PAUSED) {
             TimeControl which = getClockOfCurrentPlayer();
-            which.update(elapsedMS);
+            which.onUpdate(elapsedMS);
             view.onUpdateTime(currentPlayer, Math.max(0, which.getTimeLeft()));
             if (which.getTimeLeft() < 0) {
                 setState(State.GAME_OVER);
@@ -85,6 +85,7 @@ public class ChessClock implements Timer.TimerHandler {
 
     public void onFinishMove() {
         assert currentState == State.TICKING;
+        getClockOfCurrentPlayer().onMoveFinished();
         timer.onRenewClock();
         currentPlayer = !currentPlayer;
     }

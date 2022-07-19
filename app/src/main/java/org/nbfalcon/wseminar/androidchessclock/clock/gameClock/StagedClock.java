@@ -16,14 +16,14 @@ public class StagedClock implements TimeControl {
     }
 
     @Override
-    public void update(long elapsedTime) {
+    public void onUpdate(long elapsedTime) {
         if (current != null) {
-            current.getTimeControl().update(elapsedTime);
+            current.getTimeControl().onUpdate(elapsedTime);
         }
     }
 
     @Override
-    public void moveFinished() {
+    public void onMoveFinished() {
         if (current != null) {
             current.onMoveFinished();
             if (current.areMovesUp()) {

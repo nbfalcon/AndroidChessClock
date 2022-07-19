@@ -1,9 +1,9 @@
 package org.nbfalcon.wseminar.androidchessclock.clock.timeControl;
 
 public interface TimeControl {
-    void update(long elapsedTime);
+    void onUpdate(long elapsedTime);
 
-    void moveFinished();
+    void onMoveFinished();
 
     long getTimeLeft();
 }
