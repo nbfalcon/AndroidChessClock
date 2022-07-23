@@ -11,7 +11,8 @@ public class TimeControlStageTemplate extends SingleStageTimeControlTemplate {
     public final int nMoves;
 
     public TimeControlStageTemplate(@NotNull Type type, int time, int increment, int nMoves) {
-        super(type, time, increment);
+        // FIXME
+        super("", time, increment, type);
         this.nMoves = nMoves;
     }
 

@@ -4,11 +4,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatSpinner;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.PlayerClockTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
@@ -31,9 +36,23 @@ public class ChessClockActivity extends AppCompatActivity {
         view.setupCallbacks();
 
         // FIXME
-        theClock.setClocks(new ClockPairTemplate(
-                new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 300 * 1000, 0),
-                new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 3 * 1000, 0)));
+//        theClock.setClocks(new ClockPairTemplate(
+//                new SingleStageTimeControlTemplate("5+0", 300 * 1000, 0, TimeControlStageTemplate.Type.FISHER),
+//                new SingleStageTimeControlTemplate("3s+0 (DEBUG)", 3 * 1000, 0, TimeControlStageTemplate.Type.FISHER)));
+
+        AppCompatSpinner timeModePicker = findViewById(R.id.timeModePicker);
+        timeModePicker.setAdapter(new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, BuiltinTimeControls.BUILTIN));
+        timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                PlayerClockTemplate timeMode = (PlayerClockTemplate) timeModePicker.getAdapter().getItem(position);
+                theClock.setClocks(new ClockPairTemplate(timeMode, timeMode));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     private static class ChessClockUiViewImpl implements ChessClock.ChessClockView {

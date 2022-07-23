@@ -5,7 +5,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleSt
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 
 public class BuiltinTimeControls {
-    public final PlayerClockTemplate[] BUILTIN = new PlayerClockTemplate[]{new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 5 * 300 * 1000, 0), new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 300 * 1000, 0), new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 120 * 1000, 1000)};
+    public static final PlayerClockTemplate[] BUILTIN = new PlayerClockTemplate[]{new SingleStageTimeControlTemplate("15+0", 15 * 60 * 1000, 0, TimeControlStageTemplate.Type.FISHER), new SingleStageTimeControlTemplate("5+0", 5 * 60 * 1000, 0, TimeControlStageTemplate.Type.FISHER), new SingleStageTimeControlTemplate("2+1", 2 * 60 * 1000, 1000, TimeControlStageTemplate.Type.FISHER)};
 
     protected BuiltinTimeControls() {
     }
