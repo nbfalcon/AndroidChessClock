@@ -12,7 +12,7 @@ public class StagedClock implements TimeControl {
 
     public StagedClock(Iterator<TimeControlStageTemplate> nextStages) {
         this.nextStages = nextStages;
-        current = nextStages.next().create();
+        current = nextStages.next().createTimeControlStage();
     }
 
     @Override
@@ -27,7 +27,7 @@ public class StagedClock implements TimeControl {
         if (current != null) {
             current.onMoveFinished();
             if (current.areMovesUp()) {
-                current = nextStages.hasNext() ? nextStages.next().create() : null;
+                current = nextStages.hasNext() ? nextStages.next().createTimeControlStage() : null;
             }
         }
     }
