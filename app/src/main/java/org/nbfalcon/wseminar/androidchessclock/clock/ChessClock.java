@@ -3,6 +3,7 @@ package org.nbfalcon.wseminar.androidchessclock.clock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.TimeControl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 
@@ -11,7 +12,9 @@ public class ChessClock implements Timer.TimerHandler {
     private final Timer timer;
     private boolean currentPlayer = false;
     private State currentState = State.INIT;
+    private ClockPairTemplate clockTemplate;
     private ClockPair clocks;
+
     public ChessClock(ChessClockView view, Timer timer) {
         this.timer = timer;
         this.view = view;
@@ -35,6 +38,7 @@ public class ChessClock implements Timer.TimerHandler {
     }
 
     public void init() {
+        clocks = clockTemplate.create();
         view.onUpdateTime(false, clocks.getClockFor(false).getTimeLeft());
         view.onUpdateTime(true, clocks.getClockFor(true).getTimeLeft());
     }
@@ -64,6 +68,7 @@ public class ChessClock implements Timer.TimerHandler {
 
     public void onReset() {
         assert currentState == State.GAME_OVER;
+        init();
         setState(State.INIT);
     }
 
@@ -90,9 +95,9 @@ public class ChessClock implements Timer.TimerHandler {
         currentPlayer = !currentPlayer;
     }
 
-    public void setClocks(ClockPair clocks) {
+    public void setClocks(ClockPairTemplate clocks) {
         assert currentState == State.INIT;
-        this.clocks = clocks;
+        this.clockTemplate = clocks;
     }
 
     public enum State {

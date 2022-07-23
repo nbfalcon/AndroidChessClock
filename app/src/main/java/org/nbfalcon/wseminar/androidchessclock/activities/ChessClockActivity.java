@@ -8,8 +8,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
-import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.FisherIncrement;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.views.StartButton;
@@ -30,7 +31,9 @@ public class ChessClockActivity extends AppCompatActivity {
         view.setupCallbacks();
 
         // FIXME
-        theClock.setClocks(new ClockPair(new FisherIncrement(3 * 1000, 0), new FisherIncrement(300 * 1000, 0)));
+        theClock.setClocks(new ClockPairTemplate(
+                new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 300 * 1000, 0),
+                new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 3 * 1000, 0)));
         theClock.init();
     }
 
