@@ -34,7 +34,6 @@ public class ChessClockActivity extends AppCompatActivity {
         theClock.setClocks(new ClockPairTemplate(
                 new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 300 * 1000, 0),
                 new SingleStageTimeControlTemplate(TimeControlStageTemplate.Type.FISHER, 3 * 1000, 0)));
-        theClock.init();
     }
 
     private static class ChessClockUiViewImpl implements ChessClock.ChessClockView {
