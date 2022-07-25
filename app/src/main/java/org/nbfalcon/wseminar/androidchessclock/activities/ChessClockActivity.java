@@ -14,8 +14,6 @@ import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.PlayerClockTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.views.StartButton;
@@ -58,6 +56,7 @@ public class ChessClockActivity extends AppCompatActivity {
     private static class ChessClockUiViewImpl implements ChessClock.ChessClockView {
         private final @NotNull TimerView player1Clock, player2Clock;
         private final @NotNull StartButton startButton;
+        private final @NotNull AppCompatSpinner timeModePicker;
 
         private ChessClock theClockModel;
 
@@ -65,6 +64,7 @@ public class ChessClockActivity extends AppCompatActivity {
             this.player1Clock = bindFrom.findViewById(R.id.player1Clock);
             this.player2Clock = bindFrom.findViewById(R.id.player2Clock);
             this.startButton = bindFrom.findViewById(R.id.startButton);
+            this.timeModePicker = bindFrom.findViewById(R.id.timeModePicker);
         }
 
         public void injectClockModel(@NotNull ChessClock theClockModel) {
@@ -81,6 +81,9 @@ public class ChessClockActivity extends AppCompatActivity {
         public void onTransition(ChessClock.@NotNull State toState) {
             switch (toState) {
                 case INIT:
+                    startButton.setState(StartButton.State.START);
+                    timeModePicker.setEnabled(false);
+                    break;
                 case PAUSED:
                     startButton.setState(StartButton.State.START);
                     break;
@@ -89,6 +92,7 @@ public class ChessClockActivity extends AppCompatActivity {
                     break;
                 case TICKING:
                     startButton.setState(StartButton.State.STOP);
+                    timeModePicker.setEnabled(false);
                     break;
             }
         }
