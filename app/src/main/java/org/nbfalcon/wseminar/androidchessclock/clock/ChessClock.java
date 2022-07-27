@@ -61,7 +61,7 @@ public class ChessClock implements Timer.TimerHandler {
     }
 
     public void onReset() {
-        assert currentState == State.GAME_OVER;
+        assert currentState == State.PAUSED || currentState == State.GAME_OVER;
         clocks = clockTemplate.create();
         setState(State.INIT);
         resetViewTimers();

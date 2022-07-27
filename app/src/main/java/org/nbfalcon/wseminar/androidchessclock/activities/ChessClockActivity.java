@@ -3,12 +3,15 @@ package org.nbfalcon.wseminar.androidchessclock.activities;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
@@ -20,6 +23,10 @@ import org.nbfalcon.wseminar.androidchessclock.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.views.TimerView;
 
 public class ChessClockActivity extends AppCompatActivity {
+
+    private ChessClock theClock;
+    private @Nullable MenuItem menuRestartGame;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +36,7 @@ public class ChessClockActivity extends AppCompatActivity {
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
 
-        ChessClock theClock = new ChessClock(view, timer);
+        this.theClock = new ChessClock(view, timer);
         view.injectClockModel(theClock);
         view.setupCallbacks();
 
@@ -53,7 +60,24 @@ public class ChessClockActivity extends AppCompatActivity {
         });
     }
 
-    private static class ChessClockUiViewImpl implements ChessClock.ChessClockView {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.chess_clock_threedot, menu);
+
+        menuRestartGame = menu.findItem(R.id.menuRestartGame);
+        menuRestartGame.setEnabled(theClock.getState() == ChessClock.State.PAUSED || theClock.getState() == ChessClock.State.GAME_OVER);
+        menuRestartGame.setOnMenuItemClickListener(menuItem -> {
+            if (theClock.getState() == ChessClock.State.PAUSED || theClock.getState() == ChessClock.State.GAME_OVER) {
+                theClock.onReset();
+                return true;
+            }
+            return false;
+        });
+
+        return true;
+    }
+
+    private class ChessClockUiViewImpl implements ChessClock.ChessClockView {
         private final @NotNull TimerView player1Clock, player2Clock;
         private final @NotNull StartButton startButton;
         private final @NotNull AppCompatSpinner timeModePicker;
@@ -94,6 +118,10 @@ public class ChessClockActivity extends AppCompatActivity {
                     startButton.setState(StartButton.State.STOP);
                     timeModePicker.setEnabled(false);
                     break;
+            }
+
+            if (menuRestartGame != null) {
+                menuRestartGame.setEnabled(toState == ChessClock.State.GAME_OVER || toState == ChessClock.State.PAUSED);
             }
         }
 
