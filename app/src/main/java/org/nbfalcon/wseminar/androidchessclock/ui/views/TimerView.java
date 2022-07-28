@@ -27,17 +27,16 @@ public class TimerView extends AppCompatTextView {
     private static String formatTime(long seconds) {
         // FIXME: this is probably broken
 
-        final long s = seconds % 60;
-        seconds /= 60;
-        final long m = seconds % 60;
-        seconds /= 60;
-        final long h = seconds % 24;
-        seconds /= 24;
-        final long d = seconds;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+        seconds %= 60;
+        minutes %= 60;
+        hours %= 24;
 
-        String timeString = m + ":" + (s < 10 ? "0" + s : s);
-        if (h > 0) timeString = h + ":" + timeString;
-        if (d > 0) timeString = d + "d " + timeString;
+        String timeString = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+        if (hours > 0) timeString = hours + ":" + timeString;
+        if (days > 0) timeString = days + "d " + timeString;
 
         return timeString;
     }
