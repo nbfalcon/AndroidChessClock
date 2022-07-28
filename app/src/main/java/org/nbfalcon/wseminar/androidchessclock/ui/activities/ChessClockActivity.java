@@ -188,7 +188,7 @@ public class ChessClockActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 if (theClockModel.getState() == ChessClock.State.INIT) {
-                    new PlayerClockCustomizerDialog((dialog) -> {
+                    new PlayerClockCustomizerDialog(player, (dialog) -> {
                         ClockPairTemplate template = theClockModel.getClocks();
 
                         ClockPairTemplate newClockPairTemplate;
