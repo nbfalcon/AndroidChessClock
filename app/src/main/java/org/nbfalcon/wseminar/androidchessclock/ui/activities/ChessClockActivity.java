@@ -192,8 +192,10 @@ public class ChessClockActivity extends AppCompatActivity {
                         ClockPairTemplate template = theClockModel.getClocks();
 
                         ClockPairTemplate newClockPairTemplate;
-                        SingleStageTimeControlTemplate changedPlayerTemplate = new SingleStageTimeControlTemplate(
-                                "FIXME", dialog.getBaseTimeMS(), dialog.getIncrementMS(), dialog.getIncrementType());
+                        SingleStageTimeControlTemplate changedPlayerTemplate = new SingleStageTimeControlTemplate("FIXME",
+                                dialog.getStage().getBaseTimeMS(),
+                                dialog.getStage().getIncrementMS(),
+                                dialog.getStage().getIncrementType());
                         if (dialog.shouldSetForBothPlayers()) {
                             newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, changedPlayerTemplate);
                         } else {
