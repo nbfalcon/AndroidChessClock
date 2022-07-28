@@ -25,7 +25,8 @@ public class TimerView extends AppCompatTextView {
     }
 
     private static String formatTime(long seconds) {
-        // FIXME: this is probably broken
+        // FIXME: there is something wrong with this (do we even care about days?).
+        //  However, the results displayed are correct. Also, what about I18n?
 
         long minutes = seconds / 60;
         long hours = minutes / 60;

@@ -18,6 +18,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleSt
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomizer;
 import org.nbfalcon.wseminar.androidchessclock.util.android.ViewFlipperUtils;
 
+// FIXME: while the dialog is running, the clock can be started; this is kinda broken
 public class PlayerClockCustomizerDialog extends DialogFragment {
     private final @NotNull OnTimeSet onTimeSet;
     private final boolean forPlayer;
