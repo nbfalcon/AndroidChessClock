@@ -29,6 +29,8 @@ public class TimePickerWithSeconds extends LinearLayout {
 
     private final @NotNull NumberPicker pickerSeconds;
 
+    private @Nullable ValueChangeListener onValueChangeListener;
+
     {
         LayoutInflater.from(getContext()).inflate(R.layout.view_time_picker_with_seconds, this);
 
@@ -41,6 +43,13 @@ public class TimePickerWithSeconds extends LinearLayout {
         pickerSeconds = findViewById(R.id.picker_seconds);
         pickerSeconds.setMinValue(0);
         pickerSeconds.setMaxValue(59);
+
+        NumberPicker.OnValueChangeListener numberPicker2ValueChange = (picker, oldVal, newVal) -> {
+            if (onValueChangeListener != null) onValueChangeListener.onTimeChanged(getTimeSeconds());
+        };
+        pickerHours.setOnValueChangedListener(numberPicker2ValueChange);
+        pickerMinutes.setOnValueChangedListener(numberPicker2ValueChange);
+        pickerSeconds.setOnValueChangedListener(numberPicker2ValueChange);
     }
 
     public long getTimeSeconds() {
@@ -53,8 +62,20 @@ public class TimePickerWithSeconds extends LinearLayout {
         minutes %= 60;
         seconds %= 60;
 
+        // Thankfully with this API they don't notify the number picker's value change listener,
+        //  causing our onValueChangeListener to be called more often that it should
         pickerHours.setValue((int) hours);
         pickerMinutes.setValue((int) minutes);
         pickerSeconds.setValue((int) seconds);
+
+        if (onValueChangeListener != null) onValueChangeListener.onTimeChanged(seconds);
+    }
+
+    public void setOnValueChangeListener(@Nullable ValueChangeListener listener) {
+        this.onValueChangeListener = listener;
+    }
+
+    public interface ValueChangeListener {
+        void onTimeChanged(long newTimeSeconds);
     }
 }
