@@ -1,12 +1,12 @@
 package org.nbfalcon.wseminar.androidchessclock.clock.timeControl;
 
 public class BronsteinDelay implements TimeControl {
-    private final int increment;
-    private int timeLeft;
+    private final long increment;
+    private long timeLeft;
 
     private int elapsedThisMove = 0;
 
-    public BronsteinDelay(int totalTime, int increment) {
+    public BronsteinDelay(long totalTime, long increment) {
         this.timeLeft = totalTime;
         this.increment = increment;
     }

@@ -1,12 +1,12 @@
 package org.nbfalcon.wseminar.androidchessclock.clock.timeControl;
 
 public class SimpleDelay implements TimeControl {
-    private final int increment;
-    private int timeLeft;
+    private final long increment;
+    private long timeLeft;
 
-    private int elapsedThisMove = 0;
+    private long elapsedThisMove = 0;
 
-    public SimpleDelay(int totalTime, int increment) {
+    public SimpleDelay(long totalTime, long increment) {
         this.timeLeft = totalTime;
         this.increment = increment;
     }

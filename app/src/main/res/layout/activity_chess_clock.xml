@@ -4,9 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.ChessClockActivity">
+    tools:context=".ui.activities.ChessClockActivity">
 
-    <org.nbfalcon.wseminar.androidchessclock.views.TimerView
+    <org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView
         android:id="@+id/player1Clock"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -25,7 +25,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="@id/startButton" />
 
-    <org.nbfalcon.wseminar.androidchessclock.views.StartButton
+    <org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton
         android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
         app:layout_constraintLeft_toRightOf="@id/timeModePicker"
         app:layout_constraintTop_toBottomOf="@id/player1Clock" />
 
-    <org.nbfalcon.wseminar.androidchessclock.views.TimerView
+    <org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView
         android:id="@+id/player2Clock"
         android:layout_width="match_parent"
         android:layout_height="0dp"

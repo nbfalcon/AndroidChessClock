@@ -14,7 +14,16 @@ public class ClockPairTemplate {
     }
 
     public ClockPair create() {
-        PlayerClockTemplate p2 = player2 == null ? player1 : player2;
-        return new ClockPair(player1.createPlayerClock(), p2.createPlayerClock());
+        return new ClockPair(getPlayer1().createPlayerClock(), getPlayer2().createPlayerClock());
+    }
+
+    @NotNull
+    public PlayerClockTemplate getPlayer1() {
+        return player1;
+    }
+
+    @NotNull
+    public PlayerClockTemplate getPlayer2() {
+        return player2 == null ? player1 : player2;
     }
 }

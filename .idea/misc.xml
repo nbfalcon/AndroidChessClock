@@ -5,6 +5,10 @@
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.31354166666666666" />
         <entry key="../../Android/Sdk/platforms/android-31/data/res/drawable/btn_star.xml" value="0.17552083333333332" />
+        <entry key="..\:/Users/nikbl/IdeaProjects/AndroidChessClock/app/src/main/res/layout/activity_chess_clock.xml" value="0.47780797101449274" />
+        <entry key="..\:/Users/nikbl/IdeaProjects/AndroidChessClock/app/src/main/res/layout/fragment_player_clock_customizer.xml" value="0.31302083333333336" />
+        <entry key="..\:/Users/nikbl/IdeaProjects/AndroidChessClock/app/src/main/res/layout/view_clock_time_picker.xml" value="0.47780797101449274" />
+        <entry key="..\:/Users/nikbl/IdeaProjects/AndroidChessClock/app/src/main/res/layout/view_time_picker_with_seconds.xml" value="0.47780797101449274" />
         <entry key="..\:/Users/nikbl/IdeaProjects/AndroidChessClock/app/src/main/res/menu/chess_clock_threedot.xml" value="0.39895833333333336" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.15925925925925927" />
         <entry key="app/src/main/res/drawable/ic_material_not_started.xml" value="0.15925925925925927" />

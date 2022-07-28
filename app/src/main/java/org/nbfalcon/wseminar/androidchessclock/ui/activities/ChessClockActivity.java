@@ -1,4 +1,4 @@
-package org.nbfalcon.wseminar.androidchessclock.activities;
+package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,10 +17,13 @@ import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.PlayerClockTemplate;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
-import org.nbfalcon.wseminar.androidchessclock.views.StartButton;
-import org.nbfalcon.wseminar.androidchessclock.views.TimerView;
+import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
+import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
+import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
 
 public class ChessClockActivity extends AppCompatActivity {
 
@@ -129,6 +132,9 @@ public class ChessClockActivity extends AppCompatActivity {
             startButton.setOnClickListener(this::onClickStartButton);
             player1Clock.setOnClickListener(new TimerButtonListener(false));
             player2Clock.setOnClickListener(new TimerButtonListener(true));
+
+            player1Clock.setOnLongClickListener(new TimerButtonLongClickListener(false));
+            player2Clock.setOnLongClickListener(new TimerButtonLongClickListener(true));
         }
 
         private void onClickStartButton(View ignored) {
@@ -170,6 +176,44 @@ public class ChessClockActivity extends AppCompatActivity {
                         }
                         break;
                 }
+            }
+        }
+
+        private class TimerButtonLongClickListener implements View.OnLongClickListener {
+            private final boolean player;
+
+            private TimerButtonLongClickListener(boolean player) {
+                this.player = player;
+            }
+
+            @Override
+            public boolean onLongClick(View v) {
+                if (theClockModel.getState() == ChessClock.State.INIT) {
+                    new PlayerClockCustomizerDialog((timeMS, forBothPlayers) -> {
+                        ClockPairTemplate template = theClockModel.getClocks();
+
+                        ClockPairTemplate newTemplate;
+                        if (forBothPlayers) {
+                            newTemplate = new ClockPairTemplate(
+                                    new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER),
+                                    new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER));
+                        }
+                        else {
+                            if (!player) {
+                                newTemplate = new ClockPairTemplate(
+                                        new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER),
+                                        template.getPlayer2());
+                            } else {
+                                newTemplate = new ClockPairTemplate(
+                                        template.getPlayer1(),
+                                        new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER));
+                            }
+                        }
+
+                        theClockModel.setClocks(newTemplate);
+                    }).show(getSupportFragmentManager(), "FIXME meow");
+                }
+                return true;
             }
         }
     }

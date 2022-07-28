@@ -10,10 +10,10 @@ import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.TimeControl;
 public class SingleStageTimeControlTemplate implements PlayerClockTemplate {
     public final @NotNull String name;
     public final @NotNull TimeControlStageTemplate.Type type;
-    public final int time;
-    public final int increment;
+    public final long time;
+    public final long increment;
 
-    public SingleStageTimeControlTemplate(@NotNull String name, int time, int increment, @NotNull TimeControlStageTemplate.Type type) {
+    public SingleStageTimeControlTemplate(@NotNull String name, long time, long increment, @NotNull TimeControlStageTemplate.Type type) {
         this.name = name;
         this.time = time;
         this.increment = increment;

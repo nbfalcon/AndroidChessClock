@@ -12,7 +12,7 @@ public class ChessClock implements Timer.TimerHandler {
     private final Timer timer;
     private boolean currentPlayer = false;
     private State currentState = State.INIT;
-    private ClockPairTemplate clockTemplate;
+    private ClockPairTemplate clocksTemplate;
     private ClockPair clocks;
 
     public ChessClock(ChessClockView view, Timer timer) {
@@ -62,7 +62,7 @@ public class ChessClock implements Timer.TimerHandler {
 
     public void onReset() {
         assert currentState == State.PAUSED || currentState == State.GAME_OVER;
-        clocks = clockTemplate.create();
+        clocks = clocksTemplate.create();
         setState(State.INIT);
         resetViewTimers();
     }
@@ -92,8 +92,8 @@ public class ChessClock implements Timer.TimerHandler {
 
     public void setClocks(ClockPairTemplate clocks) {
         assert currentState == State.INIT;
-        clockTemplate = clocks;
-        this.clocks = clockTemplate.create();
+        clocksTemplate = clocks;
+        this.clocks = clocksTemplate.create();
         resetViewTimers();
     }
 
@@ -102,6 +102,10 @@ public class ChessClock implements Timer.TimerHandler {
             view.onUpdateTime(false, this.clocks.getClockFor(false).getTimeLeft());
             view.onUpdateTime(true, this.clocks.getClockFor(true).getTimeLeft());
         }
+    }
+
+    public ClockPairTemplate getClocks() {
+        return clocksTemplate;
     }
 
     public enum State {

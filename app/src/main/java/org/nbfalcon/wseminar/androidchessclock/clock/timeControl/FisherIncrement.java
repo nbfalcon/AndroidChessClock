@@ -1,10 +1,10 @@
 package org.nbfalcon.wseminar.androidchessclock.clock.timeControl;
 
 public class FisherIncrement implements TimeControl {
-    private final int increment;
-    private int timeLeft;
+    private final long increment;
+    private long timeLeft;
 
-    public FisherIncrement(int totalTime, int increment) {
+    public FisherIncrement(long totalTime, long increment) {
         this.timeLeft = totalTime;
         this.increment = increment;
     }
