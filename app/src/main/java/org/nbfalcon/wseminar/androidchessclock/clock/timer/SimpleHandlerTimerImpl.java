@@ -5,7 +5,6 @@ import android.os.SystemClock;
 
 // FIXME: this is not quite monotonic (sometimes there are clock jumps; maybe prototype something in React.JS/HTML)?
 //  Probably the solution is to make the clock tick every second, making it offset (so we tick every x+500ms) and handling the resume case specially.
-// FIXME: kill HandlerTimerImpl, since that A. does not work and B. is more complex than needed (I needed sleep)
 public class SimpleHandlerTimerImpl implements Timer {
     private final Handler handlerForTimers;
     private TimerMessage lastQueued;
