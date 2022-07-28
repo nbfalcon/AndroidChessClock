@@ -46,4 +46,15 @@ public class TimePickerWithSeconds extends LinearLayout {
     public long getTimeSeconds() {
         return pickerHours.getValue() * 60 * 60L + pickerMinutes.getValue() * 60L + pickerSeconds.getValue();
     }
+
+    public void setTimeSeconds(long seconds) {
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        minutes %= 60;
+        seconds %= 60;
+
+        pickerHours.setValue((int) hours);
+        pickerMinutes.setValue((int) minutes);
+        pickerSeconds.setValue((int) seconds);
+    }
 }

@@ -187,27 +187,29 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(View v) {
+                // FIXME: tabs that were modified should have a cute little '*' after their title like in Visual Studio
                 if (theClockModel.getState() == ChessClock.State.INIT) {
-                    new PlayerClockCustomizerDialog(player, (dialog) -> {
-                        ClockPairTemplate template = theClockModel.getClocks();
+                    PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(player, (dialog) -> {
+                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
+                                dialog.getStage1OrBoth().getBaseTimeMS(),
+                                dialog.getStage1OrBoth().getIncrementMS(),
+                                dialog.getStage1OrBoth().getIncrementType());
 
                         ClockPairTemplate newClockPairTemplate;
-                        SingleStageTimeControlTemplate changedPlayerTemplate = new SingleStageTimeControlTemplate("FIXME",
-                                dialog.getStage().getBaseTimeMS(),
-                                dialog.getStage().getIncrementMS(),
-                                dialog.getStage().getIncrementType());
                         if (dialog.shouldSetForBothPlayers()) {
-                            newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, changedPlayerTemplate);
+                            newClockPairTemplate = new ClockPairTemplate(p1, null);
                         } else {
-                            if (!player) {
-                                newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, template.getPlayer2());
-                            } else {
-                                newClockPairTemplate = new ClockPairTemplate(template.getPlayer1(), changedPlayerTemplate);
-                            }
+                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME",
+                                    dialog.getStage2().getBaseTimeMS(),
+                                    dialog.getStage2().getIncrementMS(),
+                                    dialog.getStage2().getIncrementType());
+                            newClockPairTemplate = new ClockPairTemplate(p1, p2);
                         }
 
                         theClockModel.setClocks(newClockPairTemplate);
-                    }).show(getSupportFragmentManager(), "FIXME meow");
+                    });
+                    clockDialog.bindFrom(theClockModel.getClocks());
+                    clockDialog.show(getSupportFragmentManager(), "FIXME meow");
                 }
                 return true;
             }

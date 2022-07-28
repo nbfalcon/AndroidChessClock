@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 
 public class TimeControlStageCustomizer extends ConstraintLayout {
@@ -48,5 +49,12 @@ public class TimeControlStageCustomizer extends ConstraintLayout {
 
     public TimeControlStageTemplate.Type getIncrementType() {
         return TimeControlStageTemplate.Type.values()[(int) incrementType.getSelectedItemId()];
+    }
+
+    public void bindFrom(SingleStageTimeControlTemplate timeControl) {
+        // FIXME: this is kinda hacky, since we're losing precision; however, since there is no other way to input time...
+        baseTime.setTimeSeconds(timeControl.time / 1000);
+        increment.setValue((int) (timeControl.increment / 1000));
+        incrementType.setSelection(timeControl.type.ordinal());
     }
 }
