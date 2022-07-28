@@ -3,6 +3,9 @@ package org.nbfalcon.wseminar.androidchessclock.ui.dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.NumberPicker;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
@@ -13,6 +16,9 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.TimePickerWithSeconds;
 
 public class PlayerClockCustomizerDialog extends DialogFragment {
     private final OnTimeSet onTimeSet;
+    private TimePickerWithSeconds baseTime;
+    private AppCompatCheckBox setForBothPlayers;
+    private NumberPicker increment;
 
     public PlayerClockCustomizerDialog(OnTimeSet onTimeSet) {
         this.onTimeSet = onTimeSet;
@@ -23,18 +29,39 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(R.layout.view_player_clock_customizer)
-                .setPositiveButton("Accept", (dialog, which) -> {
-                    TimePickerWithSeconds baseTime = ((AlertDialog) dialog).findViewById(R.id.base_time);
-                    AppCompatCheckBox setForBothPlayers = ((AlertDialog) dialog).findViewById(R.id.set_for_both_players);
-                    onTimeSet.setTime(baseTime.getTimeSeconds() * 1000, setForBothPlayers.isChecked());
-                })
-                .setNegativeButton("Cancel", null);
-        return builder.create();
+
+        // Since android.app.androidTimePickerDialog does something similar (inflating the view first, then setting stuff up),
+        // we are going to do the same; This StackOverflow solution is much more hacky IMHO
+        // https://stackoverflow.com/questions/17805040/how-to-create-a-number-picker-dialog
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.view_player_clock_customizer, null);
+
+        baseTime = view.findViewById(R.id.base_time);
+        setForBothPlayers = view.findViewById(R.id.set_for_both_players);
+        increment = view.findViewById(R.id.increment);
+        increment.setMinValue(0);
+        increment.setMaxValue(180); // lichess does the same
+
+        return builder.setView(view)
+                .setPositiveButton("Accept", (dialog, which) -> onTimeSet.setTime(this))
+                .setNegativeButton("Cancel", null)
+                .create();
+    }
+
+
+    public long getIncrementMS() {
+        return increment.getValue();
+    }
+
+    public long getBaseTimeMS() {
+        return baseTime.getTimeSeconds() * 1000;
+    }
+
+    public boolean shouldSetForBothPlayers() {
+        return setForBothPlayers.isChecked();
     }
 
     @FunctionalInterface
     public interface OnTimeSet {
-        void setTime(long timeMS, boolean forBothPlayers);
+        void setTime(PlayerClockCustomizerDialog dialog);
     }
 }

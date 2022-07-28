@@ -189,28 +189,24 @@ public class ChessClockActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 if (theClockModel.getState() == ChessClock.State.INIT) {
-                    new PlayerClockCustomizerDialog((timeMS, forBothPlayers) -> {
+                    new PlayerClockCustomizerDialog((dialog) -> {
                         ClockPairTemplate template = theClockModel.getClocks();
 
-                        ClockPairTemplate newTemplate;
-                        if (forBothPlayers) {
-                            newTemplate = new ClockPairTemplate(
-                                    new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER),
-                                    new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER));
+                        ClockPairTemplate newClockPairTemplate;
+                        SingleStageTimeControlTemplate changedPlayerTemplate = new SingleStageTimeControlTemplate(
+                                "FIXME", dialog.getBaseTimeMS(), dialog.getIncrementMS(), TimeControlStageTemplate.Type.FISHER);
+                        if (dialog.shouldSetForBothPlayers()) {
+                            newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, changedPlayerTemplate);
                         }
                         else {
                             if (!player) {
-                                newTemplate = new ClockPairTemplate(
-                                        new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER),
-                                        template.getPlayer2());
+                                newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, template.getPlayer2());
                             } else {
-                                newTemplate = new ClockPairTemplate(
-                                        template.getPlayer1(),
-                                        new SingleStageTimeControlTemplate("FIXME", timeMS, 0L, TimeControlStageTemplate.Type.FISHER));
+                                newClockPairTemplate = new ClockPairTemplate(template.getPlayer1(), changedPlayerTemplate);
                             }
                         }
 
-                        theClockModel.setClocks(newTemplate);
+                        theClockModel.setClocks(newClockPairTemplate);
                     }).show(getSupportFragmentManager(), "FIXME meow");
                 }
                 return true;
