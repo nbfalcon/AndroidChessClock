@@ -2,10 +2,7 @@ package org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template;
 
 import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
-import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.BronsteinDelay;
-import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.FisherIncrement;
-import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.SimpleDelay;
-import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.TimeControl;
+import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.*;
 
 public class SingleStageTimeControlTemplate implements PlayerClockTemplate {
     public final @NotNull String name;
@@ -24,6 +21,9 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate {
     public TimeControl createPlayerClock() {
         TimeControl timeControl;
         switch (this.type) {
+            case NONE:
+                timeControl = new NoIncrement(time);
+                break;
             case BRONSTEIN:
                 timeControl = new BronsteinDelay(time, increment);
                 break;
@@ -37,10 +37,6 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate {
                 throw new AssertionError("[type] is invalid");
         }
         return timeControl;
-    }
-
-    public enum Type {
-        BRONSTEIN, FISHER, SIMPLE
     }
 
     @NonNull

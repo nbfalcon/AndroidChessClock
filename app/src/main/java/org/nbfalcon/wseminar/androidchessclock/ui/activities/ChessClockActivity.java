@@ -18,7 +18,6 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeContro
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.PlayerClockTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
@@ -194,11 +193,10 @@ public class ChessClockActivity extends AppCompatActivity {
 
                         ClockPairTemplate newClockPairTemplate;
                         SingleStageTimeControlTemplate changedPlayerTemplate = new SingleStageTimeControlTemplate(
-                                "FIXME", dialog.getBaseTimeMS(), dialog.getIncrementMS(), TimeControlStageTemplate.Type.FISHER);
+                                "FIXME", dialog.getBaseTimeMS(), dialog.getIncrementMS(), dialog.getIncrementType());
                         if (dialog.shouldSetForBothPlayers()) {
                             newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, changedPlayerTemplate);
-                        }
-                        else {
+                        } else {
                             if (!player) {
                                 newClockPairTemplate = new ClockPairTemplate(changedPlayerTemplate, template.getPlayer2());
                             } else {

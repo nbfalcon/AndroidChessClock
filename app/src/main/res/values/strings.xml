@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">AndroidChessClock</string>
+
+    <string-array name="incrementTypes">
+        <item>None</item>
+        <item>Bronstein</item>
+        <item>Fisher</item>
+        <item>Simple</item>
+    </string-array>
 </resources>

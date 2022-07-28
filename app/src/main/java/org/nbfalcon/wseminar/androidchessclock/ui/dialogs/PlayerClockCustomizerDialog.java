@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
+import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.fragment.app.DialogFragment;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.TimeControlStageTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimePickerWithSeconds;
 
 public class PlayerClockCustomizerDialog extends DialogFragment {
@@ -19,6 +21,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     private TimePickerWithSeconds baseTime;
     private AppCompatCheckBox setForBothPlayers;
     private NumberPicker increment;
+    private Spinner incrementType;
 
     public PlayerClockCustomizerDialog(OnTimeSet onTimeSet) {
         this.onTimeSet = onTimeSet;
@@ -39,7 +42,8 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
         setForBothPlayers = view.findViewById(R.id.set_for_both_players);
         increment = view.findViewById(R.id.increment);
         increment.setMinValue(0);
-        increment.setMaxValue(180); // lichess does the same
+        increment.setMaxValue(180); // lichess.org has the same limit
+        incrementType = view.findViewById(R.id.incrementType);
 
         return builder.setView(view)
                 .setPositiveButton("Accept", (dialog, which) -> onTimeSet.setTime(this))
@@ -60,6 +64,9 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
         return setForBothPlayers.isChecked();
     }
 
+    public TimeControlStageTemplate.Type getIncrementType() {
+        return TimeControlStageTemplate.Type.values()[(int) incrementType.getSelectedItemId()];
+    }
     @FunctionalInterface
     public interface OnTimeSet {
         void setTime(PlayerClockCustomizerDialog dialog);

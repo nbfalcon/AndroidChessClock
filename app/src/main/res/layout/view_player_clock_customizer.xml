@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:text="Set for both players"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/base_time" />
+        app:layout_constraintTop_toBottomOf="@+id/incrementType" />
 
     <TextView
         android:id="@+id/textPlus"
@@ -47,5 +47,14 @@
         app:layout_constraintBottom_toBottomOf="@+id/base_time"
         app:layout_constraintStart_toEndOf="@+id/base_time"
         app:layout_constraintTop_toTopOf="@+id/base_time" />
+
+    <Spinner
+        android:id="@+id/incrementType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:entries="@array/incrementTypes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/increment" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
