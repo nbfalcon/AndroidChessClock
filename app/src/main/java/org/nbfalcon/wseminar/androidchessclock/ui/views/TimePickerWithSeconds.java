@@ -32,13 +32,13 @@ public class TimePickerWithSeconds extends LinearLayout {
     {
         LayoutInflater.from(getContext()).inflate(R.layout.view_time_picker_with_seconds, this);
 
-        pickerHours = findViewById(R.id.picker_hours);
+        pickerHours = findViewById(R.id.pickerHours);
         pickerHours.setMinValue(0);
         pickerHours.setMaxValue(23);
-        pickerMinutes = findViewById(R.id.picker_minutes);
+        pickerMinutes = findViewById(R.id.pickerMinutes);
         pickerMinutes.setMinValue(0);
         pickerMinutes.setMaxValue(59);
-        pickerSeconds = findViewById(R.id.picker_seconds);
+        pickerSeconds = findViewById(R.id.pickerSeconds);
         pickerSeconds.setMinValue(0);
         pickerSeconds.setMaxValue(59);
     }

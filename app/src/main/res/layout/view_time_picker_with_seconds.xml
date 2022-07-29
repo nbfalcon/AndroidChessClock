@@ -12,7 +12,7 @@
         android:layout_height="match_parent" />
 
     <NumberPicker
-        android:id="@+id/picker_hours"
+        android:id="@+id/pickerHours"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
@@ -24,7 +24,7 @@
         android:layout_height="match_parent" />
 
     <NumberPicker
-        android:id="@+id/picker_minutes"
+        android:id="@+id/pickerMinutes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
@@ -36,7 +36,7 @@
         android:layout_height="match_parent" />
 
     <NumberPicker
-        android:id="@+id/picker_seconds"
+        android:id="@+id/pickerSeconds"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>
