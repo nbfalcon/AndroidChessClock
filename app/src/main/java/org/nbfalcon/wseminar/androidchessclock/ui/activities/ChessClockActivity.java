@@ -16,7 +16,6 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.PlayerClockTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
@@ -24,10 +23,14 @@ import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerD
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class ChessClockActivity extends AppCompatActivity {
 
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
+    private ArrayAdapter<ClockPairTemplate> timeControlSelection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +51,15 @@ public class ChessClockActivity extends AppCompatActivity {
 //                new SingleStageTimeControlTemplate("3s+0 (DEBUG)", 3 * 1000, 0, TimeControlStageTemplate.Type.FISHER)));
 
         AppCompatSpinner timeModePicker = findViewById(R.id.timeModePicker);
-        timeModePicker.setAdapter(new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, BuiltinTimeControls.BUILTIN));
+        timeControlSelection = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item,
+                // Don't rely on undefined behaviour
+                new ArrayList<>(Arrays.asList(BuiltinTimeControls.BUILTIN)));
+        timeModePicker.setAdapter(timeControlSelection);
         timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                PlayerClockTemplate timeMode = (PlayerClockTemplate) timeModePicker.getAdapter().getItem(position);
-                theClock.setClocks(new ClockPairTemplate(timeMode, timeMode));
+                ClockPairTemplate timeControl = (ClockPairTemplate) timeModePicker.getAdapter().getItem(position);
+                theClock.setClocks(timeControl);
             }
 
             @Override
@@ -108,7 +114,7 @@ public class ChessClockActivity extends AppCompatActivity {
             switch (toState) {
                 case INIT:
                     startButton.setState(StartButton.State.START);
-                    timeModePicker.setEnabled(false);
+                    timeModePicker.setEnabled(true);
                     break;
                 case PAUSED:
                     startButton.setState(StartButton.State.START);
@@ -195,18 +201,28 @@ public class ChessClockActivity extends AppCompatActivity {
                                 dialog.getStage1OrBoth().getIncrementMS(),
                                 dialog.getStage1OrBoth().getIncrementType());
 
+                        @Nullable String name = dialog.getCustomTimeControlName();
+                        @NotNull String forceName = name != null ? name : "Custom";
+
                         ClockPairTemplate newClockPairTemplate;
                         if (dialog.shouldSetForBothPlayers()) {
-                            newClockPairTemplate = new ClockPairTemplate(p1, null);
+                            newClockPairTemplate = new ClockPairTemplate(forceName, p1, null);
                         } else {
                             SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME",
                                     dialog.getStage2().getBaseTimeMS(),
                                     dialog.getStage2().getIncrementMS(),
                                     dialog.getStage2().getIncrementType());
-                            newClockPairTemplate = new ClockPairTemplate(p1, p2);
+                            newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
                         }
 
-                        theClockModel.setClocks(newClockPairTemplate);
+                        if (name != null) {
+                            timeControlSelection.add(newClockPairTemplate);
+                            // This will indirectly trigger setClocks
+                            timeModePicker.setSelection(timeModePicker.getCount() - 1);
+                        }
+                        else {
+                            theClockModel.setClocks(newClockPairTemplate);
+                        }
                     });
                     clockDialog.bindFrom(theClockModel.getClocks());
                     clockDialog.show(getSupportFragmentManager(), "FIXME meow");

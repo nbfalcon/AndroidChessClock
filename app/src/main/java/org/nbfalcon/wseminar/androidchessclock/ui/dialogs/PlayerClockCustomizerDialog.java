@@ -2,13 +2,17 @@ package org.nbfalcon.wseminar.androidchessclock.ui.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
+import android.inputmethodservice.InputMethodService;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ViewFlipper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +27,12 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     private final @NotNull OnTimeSet onTimeSet;
     private final boolean forPlayer;
     private TimeControlStageCustomizer stage1, stage2;
+    // FIXME: default true
     private AppCompatCheckBox setForBothPlayers;
     private ClockPairTemplate bindFrom;
+    // FIXME: investigate material textedit + button
+    private EditText customTimeControlName;
+    private boolean customTimeControlSaveAsClicked;
 
     public PlayerClockCustomizerDialog(boolean forPlayer, @NotNull OnTimeSet onTimeSet) {
         this.forPlayer = forPlayer;
@@ -49,15 +57,32 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
         // FIXME: this should probably go in onCreateView
         stage1 = view.findViewById(R.id.timeControlStageCustomizer1);
         stage2 = view.findViewById(R.id.timeControlStageCustomizer2);
-        stage1.bindFrom((SingleStageTimeControlTemplate) this.bindFrom.getPlayer1());
-        stage2.bindFrom((SingleStageTimeControlTemplate) this.bindFrom.getPlayer2());
+        stage1.bindFrom((SingleStageTimeControlTemplate) bindFrom.getPlayer1());
+        stage2.bindFrom((SingleStageTimeControlTemplate) bindFrom.getPlayer2());
+
+        customTimeControlName = view.findViewById(R.id.customTimeControlName);
+        // FIXME: cute "(1), (2), (3)" automatic increment?
+        customTimeControlName.setText(bindFrom.toString());
+        customTimeControlSaveAsClicked = false;
+        View timeControlSaveAs = view.findViewById(R.id.customTimeControlSaveAs);
+        timeControlSaveAs.setOnClickListener((v) -> {
+            InputMethodService inputMethodService = ContextCompat.getSystemService(customTimeControlName.getContext(), InputMethodService.class);
+            if (inputMethodService != null) {
+                // Hide the keyboard so that the text the user has typed will be committed and available on the next getText()
+                // call (otherwise that returns the empty string).
+                inputMethodService.onFinishInput();
+            }
+
+            customTimeControlSaveAsClicked = true;
+            dismiss();
+            onTimeSet.setTime(this);
+        });
 
         TabLayout stagesTabs = view.findViewById(R.id.stagesTabs);
         ViewFlipper stagesFlipper = view.findViewById(R.id.stagesFlipper);
+
         ViewFlipperUtils.linkWithTabLayout(stagesTabs, stagesFlipper);
-
         stagesTabs.selectTab(stagesTabs.getTabAt(!forPlayer ? 0 : 1));
-
         setForBothPlayers = view.findViewById(R.id.set_for_both_players);
         setForBothPlayers.setOnCheckedChangeListener((buttonView, isChecked) -> {
             TabLayout.Tab theOtherTab = stagesTabs.getTabAt((stagesTabs.getSelectedTabPosition() + 1) % 2);
@@ -74,8 +99,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     public TimeControlStageCustomizer getStage1OrBoth() {
         if (shouldSetForBothPlayers()) {
             return !forPlayer ? stage1 : stage2;
-        }
-        else {
+        } else {
             return stage1;
         }
     }
@@ -86,6 +110,13 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
 
     public boolean shouldSetForBothPlayers() {
         return setForBothPlayers.isChecked();
+    }
+
+    /**
+     * @return The name of the time control if the user wants to save it, otherwise null.
+     */
+    public @Nullable String getCustomTimeControlName() {
+        return customTimeControlSaveAsClicked ? customTimeControlName.getText().toString() : null;
     }
 
     @FunctionalInterface
