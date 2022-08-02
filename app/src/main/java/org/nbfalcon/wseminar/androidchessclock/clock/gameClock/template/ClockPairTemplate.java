@@ -7,8 +7,8 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 
 public class ClockPairTemplate {
     private final @NotNull String name;
-    private final PlayerClockTemplate player1;
-    private final @Nullable PlayerClockTemplate player2;
+    private PlayerClockTemplate player1;
+    private @Nullable PlayerClockTemplate player2;
 
     public ClockPairTemplate(@NotNull String name, @NotNull PlayerClockTemplate player1, @Nullable PlayerClockTemplate player2) {
         this.name = name;
@@ -28,6 +28,11 @@ public class ClockPairTemplate {
     @NotNull
     public PlayerClockTemplate getPlayer2() {
         return player2 == null ? player1 : player2;
+    }
+
+    public void bindFrom(@NotNull ClockPairTemplate other) {
+        this.player1 = other.player1;
+        this.player2 = other.player2;
     }
 
     @NonNull
