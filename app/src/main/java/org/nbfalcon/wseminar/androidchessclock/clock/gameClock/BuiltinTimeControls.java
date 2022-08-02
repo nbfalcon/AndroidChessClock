@@ -18,6 +18,6 @@ public class BuiltinTimeControls {
     private static ClockPairTemplate builtin(@NotNull String name, long timeS, long incrementS) {
         SingleStageTimeControlTemplate onePlayer = new SingleStageTimeControlTemplate(
                 name, timeS * 1000L, incrementS * 1000L, TimeControlStageTemplate.Type.FISHER);
-        return new ClockPairTemplate(name, onePlayer, onePlayer);
+        return new ClockPairTemplate(name, onePlayer, null);
     }
 }

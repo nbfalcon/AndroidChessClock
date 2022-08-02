@@ -89,6 +89,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
             assert theOtherTab != null;
             theOtherTab.view.setEnabled(!isChecked);
         });
+        setForBothPlayers.setChecked(bindFrom.setForBothPlayers());
 
         return builder.setView(view)
                 .setPositiveButton("Accept", (dialog, which) -> onTimeSet.setTime(this))

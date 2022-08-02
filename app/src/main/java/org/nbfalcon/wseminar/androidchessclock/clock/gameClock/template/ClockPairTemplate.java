@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
+import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
 
 public class ClockPairTemplate {
     private final @NotNull String name;
@@ -28,6 +29,10 @@ public class ClockPairTemplate {
     @NotNull
     public PlayerClockTemplate getPlayer2() {
         return player2 == null ? player1 : player2;
+    }
+
+    public boolean setForBothPlayers() {
+        return player2 == null;
     }
 
     public void bindFrom(@NotNull ClockPairTemplate other) {
