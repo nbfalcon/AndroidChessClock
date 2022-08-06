@@ -9,6 +9,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +25,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ChangeCollectorList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +37,7 @@ public class ChessClockActivity extends AppCompatActivity {
     private ArrayAdapter<ClockPairTemplate> timeControlSelection;
     private AppCompatSpinner timeModePicker;
     private ArrayList<ClockPairTemplate> timeControlsList;
+    private ActivityResultLauncher<Intent> manageTimeControlsLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +85,15 @@ public class ChessClockActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
+
+        manageTimeControlsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Intent data = result.getData();
+                    assert data != null;
+                    ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
+                    changes.applyTo(timeControlsList.subList(BuiltinTimeControls.BUILTIN.length, timeControlsList.size() - 1)); // FIXME: better array adapter here
+                    timeControlSelection.notifyDataSetChanged();
+                });
     }
 
     @Override
@@ -103,7 +116,7 @@ public class ChessClockActivity extends AppCompatActivity {
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
                     // ]builtin; custom[
                     timeControlsList.subList(BuiltinTimeControls.BUILTIN.length, timeControlsList.size() - 1).toArray(ClockPairTemplate.EMPTY_ARRAY));
-            startActivity(manageTimeControls);
+            manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
         });
 

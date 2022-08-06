@@ -1,7 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +19,12 @@ import org.nbfalcon.wseminar.androidchessclock.util.CastUtils;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ManageTimeControlsActivity extends AppCompatActivity {
     public static final String KEY_CUSTOM_TIME_CONTROLS = "org.nbfalcon.wseminar.AndroidChessClock.customTimeControls";
+    public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
+    private ChangeCollectorList<ClockPairTemplate> changesResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,13 +32,32 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_time_controls);
 
         ClockPairTemplate[] customTimeControls = CastUtils.downCastArray(getIntent().getExtras().getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
-        ChangeCollectorList<ClockPairTemplate> changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
+        changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
         ObservableList<ClockPairTemplate> backingList = new ObservableList<>(changesResult);
+
+        finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
         timeControls.setAdapter(new TimeControlsAdapter(backingList));
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
+    }
+
+    @Override
+    public void onBackPressed() {
+        finishSetResult();
+        super.onBackPressed();
+    }
+
+    private void finishSetResult() {
+        Intent result = new Intent();
+        result.putExtra(KEY_RESULT_CHANGES, changesResult.getChangeList());
+        setResult(RESULT_OK, result);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {
