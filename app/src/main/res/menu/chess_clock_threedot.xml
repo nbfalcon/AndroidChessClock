@@ -6,4 +6,9 @@
         android:title="Restart Game"
         android:icon="@drawable/ic_material_restart_alt"
         app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/menuManageTimeControls"
+        android:icon="@drawable/ic_material_add"
+        android:title="Manage Time Controls"
+        app:showAsAction="ifRoom|withText" />
 </menu>

@@ -33,6 +33,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     // FIXME: investigate material textedit + button
     private EditText customTimeControlName;
     private boolean customTimeControlSaveAsClicked;
+    private TabLayout stagesTabs;
 
     public PlayerClockCustomizerDialog(boolean forPlayer, @NotNull OnTimeSet onTimeSet) {
         this.forPlayer = forPlayer;
@@ -78,7 +79,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
             onTimeSet.setTime(this);
         });
 
-        TabLayout stagesTabs = view.findViewById(R.id.stagesTabs);
+        stagesTabs = view.findViewById(R.id.stagesTabs);
         ViewFlipper stagesFlipper = view.findViewById(R.id.stagesFlipper);
 
         ViewFlipperUtils.linkWithTabLayout(stagesTabs, stagesFlipper);
@@ -99,7 +100,9 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
 
     public TimeControlStageCustomizer getStage1OrBoth() {
         if (shouldSetForBothPlayers()) {
-            return !forPlayer ? stage1 : stage2;
+            int selected = stagesTabs.getSelectedTabPosition();
+            assert selected != -1;
+            return selected == 0 ? stage1 : stage2;
         } else {
             return stage1;
         }

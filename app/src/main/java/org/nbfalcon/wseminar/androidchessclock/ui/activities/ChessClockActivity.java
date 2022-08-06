@@ -1,5 +1,6 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,6 +33,7 @@ public class ChessClockActivity extends AppCompatActivity {
     private @Nullable MenuItem menuRestartGame;
     private ArrayAdapter<ClockPairTemplate> timeControlSelection;
     private AppCompatSpinner timeModePicker;
+    private ArrayList<ClockPairTemplate> timeControlsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +54,10 @@ public class ChessClockActivity extends AppCompatActivity {
 //                new SingleStageTimeControlTemplate("3s+0 (DEBUG)", 3 * 1000, 0, TimeControlStageTemplate.Type.FISHER)));
 
         timeModePicker = findViewById(R.id.timeModePicker);
+        timeControlsList = new ArrayList<>(Arrays.asList(BuiltinTimeControls.BUILTIN));
         timeControlSelection = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item,
                 // Arrays.asList returns a list that cannot be added to
-                new ArrayList<>(Arrays.asList(BuiltinTimeControls.BUILTIN)));
+                timeControlsList);
         timeControlSelection.add(new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null));
         timeModePicker.setAdapter(timeControlSelection);
         timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -94,15 +97,22 @@ public class ChessClockActivity extends AppCompatActivity {
             return false;
         });
 
+        MenuItem item = menu.findItem(R.id.menuManageTimeControls);
+        item.setOnMenuItemClickListener(menuItem -> {
+            Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
+            manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
+                    // ]builtin; custom[
+                    timeControlsList.subList(BuiltinTimeControls.BUILTIN.length, timeControlsList.size() - 1).toArray(ClockPairTemplate.EMPTY_ARRAY));
+            startActivity(manageTimeControls);
+            return true;
+        });
+
         return true;
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {
         PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(whichPlayer, (dialog) -> {
-            SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
-                    dialog.getStage1OrBoth().getBaseTimeMS(),
-                    dialog.getStage1OrBoth().getIncrementMS(),
-                    dialog.getStage1OrBoth().getIncrementType());
+            SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
 
             @Nullable String name = dialog.getCustomTimeControlName();
             @NotNull String forceName = name != null ? name : "Custom";
@@ -111,10 +121,7 @@ public class ChessClockActivity extends AppCompatActivity {
             if (dialog.shouldSetForBothPlayers()) {
                 newClockPairTemplate = new ClockPairTemplate(forceName, p1, null);
             } else {
-                SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME",
-                        dialog.getStage2().getBaseTimeMS(),
-                        dialog.getStage2().getIncrementMS(),
-                        dialog.getStage2().getIncrementType());
+                SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
                 newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
             }
 
