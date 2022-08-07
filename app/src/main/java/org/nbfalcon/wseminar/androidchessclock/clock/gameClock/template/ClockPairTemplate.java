@@ -12,7 +12,7 @@ public class ClockPairTemplate implements Parcelable {
     public static final Creator<ClockPairTemplate> CREATOR = new Creator<ClockPairTemplate>() {
         @Override
         public ClockPairTemplate createFromParcel(Parcel in) {
-            return readFromParcel(in);
+            return new ClockPairTemplate(in);
         }
 
         @Override
@@ -33,12 +33,10 @@ public class ClockPairTemplate implements Parcelable {
         this.player2 = player2;
     }
 
-    private static ClockPairTemplate readFromParcel(Parcel src) {
-        @NotNull String name = src.readString();
-        @NotNull PlayerClockTemplate p1 = ParcelCompatEx.readParcelable(src);
-        @Nullable PlayerClockTemplate p2 = ParcelCompatEx.readBoolean(src) ? ParcelCompatEx.readParcelable(src) : null;
-
-        return new ClockPairTemplate(name, p1, p2);
+    protected ClockPairTemplate(Parcel in) {
+        this.name = in.readString();
+        this.player1 = ParcelCompatEx.readParcelable(in);
+        this.player2 = ParcelCompatEx.readBoolean(in) ? ParcelCompatEx.readParcelable(in) : null;
     }
 
     public ClockPair create() {

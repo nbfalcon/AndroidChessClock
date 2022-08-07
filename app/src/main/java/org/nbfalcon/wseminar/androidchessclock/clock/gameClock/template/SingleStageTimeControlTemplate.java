@@ -10,7 +10,7 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
     public static final Creator<SingleStageTimeControlTemplate> CREATOR = new Creator<SingleStageTimeControlTemplate>() {
         @Override
         public SingleStageTimeControlTemplate createFromParcel(Parcel in) {
-            return readFromParcel(in);
+            return new SingleStageTimeControlTemplate(in);
         }
 
         @Override
@@ -31,12 +31,11 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
         this.type = type;
     }
 
-    public static SingleStageTimeControlTemplate readFromParcel(Parcel src) {
-        String name = src.readString();
-        TimeControlStageTemplate.Type type = TimeControlStageTemplate.Type.values()[src.readInt()];
-        long time = src.readLong();
-        long increment = src.readLong();
-        return new SingleStageTimeControlTemplate(name, time, increment, type);
+    protected SingleStageTimeControlTemplate(Parcel in) {
+        this.name = in.readString();
+        this.type = TimeControlStageTemplate.Type.values()[in.readInt()];
+        this.time = in.readLong();
+        this.increment = in.readLong();
     }
 
     @Override
