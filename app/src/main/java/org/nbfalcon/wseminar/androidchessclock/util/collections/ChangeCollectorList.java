@@ -1,4 +1,4 @@
-package org.nbfalcon.wseminar.androidchessclock.util.collections.android;
+package org.nbfalcon.wseminar.androidchessclock.util.collections;
 
 import android.os.Parcel;
 import android.os.Parcelable;

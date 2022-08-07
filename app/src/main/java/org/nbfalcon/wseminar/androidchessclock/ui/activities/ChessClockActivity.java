@@ -25,7 +25,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
-import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ChangeCollectorList;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 
 import java.util.ArrayList;
 import java.util.Arrays;

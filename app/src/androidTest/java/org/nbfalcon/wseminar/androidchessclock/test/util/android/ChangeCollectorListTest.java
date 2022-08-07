@@ -4,7 +4,7 @@ import android.os.Parcel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nbfalcon.wseminar.androidchessclock.testUtil.ParcelableInteger;
-import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ChangeCollectorList;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 
 import java.util.ArrayList;
 import java.util.List;
