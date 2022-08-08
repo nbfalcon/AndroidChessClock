@@ -23,17 +23,22 @@ import java.util.Arrays;
 
 public class ManageTimeControlsActivity extends AppCompatActivity {
     public static final String KEY_CUSTOM_TIME_CONTROLS = "org.nbfalcon.wseminar.AndroidChessClock.customTimeControls";
+    public static final String KEY_NEW_TIME_CONTROL_PRESET = "org.nbfalcon.wseminar.AndroidChessClock.newTimeControlPreset";
     public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
     private ChangeCollectorList<ClockPairTemplate> changesResult;
+    private ClockPairTemplate newTimeControlPreset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_time_controls);
 
-        ClockPairTemplate[] customTimeControls = CastUtils.downCastArray(getIntent().getExtras().getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
+        Bundle extras = getIntent().getExtras();
+        ClockPairTemplate[] customTimeControls = CastUtils.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
         changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
         ObservableList<ClockPairTemplate> backingList = new ObservableList<>(changesResult);
+
+        newTimeControlPreset = extras.getParcelable(KEY_NEW_TIME_CONTROL_PRESET);
 
         finishSetResult();
 
@@ -41,6 +46,28 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         timeControls.setAdapter(new TimeControlsAdapter(backingList));
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
+        addNewTimeControl.setOnClickListener((view) -> {
+            // FIXME: do we really need a save button here, if the user can just press ok?
+            PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(false, (dialog) -> {
+                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
+                        dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
+
+                @NotNull String name = dialog.getTimeControlName();
+
+                ClockPairTemplate newClockPairTemplate;
+                if (dialog.shouldSetForBothPlayers()) {
+                    newClockPairTemplate = new ClockPairTemplate(name, p1, null);
+                } else {
+                    SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(),
+                            dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
+                    newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
+                }
+
+                backingList.add(newClockPairTemplate);
+            });
+            clockDialog.bindFrom(newTimeControlPreset);
+            clockDialog.show(getSupportFragmentManager(), "FIXME meow");
+        });
     }
 
     @Override
@@ -104,18 +131,12 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                         String name = dialog.getTimeControlName();
                         PlayerClockCustomizerDialog.HowExited howExited = dialog.getResultType();
 
-                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
-                                dialog.getStage1OrBoth().getBaseTimeMS(),
-                                dialog.getStage1OrBoth().getIncrementMS(),
-                                dialog.getStage1OrBoth().getIncrementType());
+                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
                         ClockPairTemplate newClockPairTemplate;
                         if (dialog.shouldSetForBothPlayers()) {
                             newClockPairTemplate = new ClockPairTemplate(name, p1, null);
                         } else {
-                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME",
-                                    dialog.getStage2().getBaseTimeMS(),
-                                    dialog.getStage2().getIncrementMS(),
-                                    dialog.getStage2().getIncrementType());
+                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
                             newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
                         }
 
