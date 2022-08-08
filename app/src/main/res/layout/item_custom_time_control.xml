@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toStartOf="@+id/editRow"
         app:layout_constraintTop_toTopOf="@+id/editRow"
         android:background="@null"
-        app:srcCompat="@drawable/ic_material_add" />
+        app:srcCompat="@drawable/ic_material_delete_forever" />
 
     <ImageButton
         android:id="@+id/editRow"
@@ -31,5 +31,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:background="@null"
-        app:srcCompat="@drawable/ic_material_add" />
+        app:srcCompat="@drawable/ic_material_edit" />
 </androidx.constraintlayout.widget.ConstraintLayout>

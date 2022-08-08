@@ -8,7 +8,7 @@
         app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/menuManageTimeControls"
-        android:icon="@drawable/ic_material_add"
+        android:icon="@drawable/ic_material_manage_history"
         android:title="Manage Time Controls"
         app:showAsAction="ifRoom|withText" />
 </menu>
