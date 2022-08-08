@@ -100,18 +100,30 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 editRow.setOnClickListener((view) -> {
                     PlayerClockCustomizerDialog customizerDialog = new PlayerClockCustomizerDialog(false, dialog -> {
                         int index = getAdapterPosition();
-                        ClockPairTemplate prev = backingList.get(index);
 
-                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
+                        String name = dialog.getTimeControlName();
+                        PlayerClockCustomizerDialog.HowExited howExited = dialog.getResultType();
+
+                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
+                                dialog.getStage1OrBoth().getBaseTimeMS(),
+                                dialog.getStage1OrBoth().getIncrementMS(),
+                                dialog.getStage1OrBoth().getIncrementType());
                         ClockPairTemplate newClockPairTemplate;
                         if (dialog.shouldSetForBothPlayers()) {
-                            newClockPairTemplate = new ClockPairTemplate(prev.toString(), p1, null);
+                            newClockPairTemplate = new ClockPairTemplate(name, p1, null);
                         } else {
-                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
-                            newClockPairTemplate = new ClockPairTemplate(prev.toString(), p1, p2);
+                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME",
+                                    dialog.getStage2().getBaseTimeMS(),
+                                    dialog.getStage2().getIncrementMS(),
+                                    dialog.getStage2().getIncrementType());
+                            newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
                         }
 
-                        backingList.set(index, newClockPairTemplate);
+                        if (howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW) {
+                            backingList.add(newClockPairTemplate);
+                        } else {
+                            backingList.set(index, newClockPairTemplate);
+                        }
                     });
                     customizerDialog.bindFrom(backingList.get(getAdapterPosition()));
                     customizerDialog.show(getSupportFragmentManager(), "FIXME meow");

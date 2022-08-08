@@ -2,7 +2,6 @@ package org.nbfalcon.wseminar.androidchessclock.ui.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.inputmethodservice.InputMethodService;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -119,8 +118,16 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     /**
      * @return The name of the time control if the user wants to save it, otherwise null.
      */
-    public @Nullable String getCustomTimeControlName() {
-        return customTimeControlSaveAsClicked ? customTimeControlName.getText().toString() : null;
+    public @NotNull String getTimeControlName() {
+        return customTimeControlName.getText().toString();
+    }
+
+    public HowExited getResultType() {
+        return customTimeControlSaveAsClicked ? HowExited.CREATE_NEW : HowExited.OK;
+    }
+
+    public enum HowExited {
+        OK, CREATE_NEW
     }
 
     @FunctionalInterface

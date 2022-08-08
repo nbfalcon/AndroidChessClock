@@ -40,7 +40,7 @@ public class TimeControlStageCustomizer extends ConstraintLayout {
     }
 
     public long getIncrementMS() {
-        return increment.getValue();
+        return increment.getValue() * 1000L;
     }
 
     public long getBaseTimeMS() {
