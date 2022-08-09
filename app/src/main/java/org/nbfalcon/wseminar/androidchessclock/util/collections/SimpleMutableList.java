@@ -27,8 +27,7 @@ public interface SimpleMutableList<E> {
                 set(i, get(i + 1));
                 set(i + 1, tmp);
             }
-        }
-        else if (to < from) {
+        } else if (to < from) {
             for (int i = from; i > to; i--) {
                 E tmp = get(i);
                 set(i, get(i - 1));

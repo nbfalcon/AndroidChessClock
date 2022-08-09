@@ -19,7 +19,7 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
-import org.nbfalcon.wseminar.androidchessclock.util.CastUtils;
+import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
@@ -39,7 +39,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_time_controls);
 
         Bundle extras = getIntent().getExtras();
-        ClockPairTemplate[] customTimeControls = CastUtils.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
+        ClockPairTemplate[] customTimeControls = CollectionUtilsEx.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
         changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
         ObservableList<ClockPairTemplate> observableList = new ObservableList<>(changesResult);
 

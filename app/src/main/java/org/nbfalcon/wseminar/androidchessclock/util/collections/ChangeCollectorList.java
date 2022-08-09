@@ -3,6 +3,7 @@ package org.nbfalcon.wseminar.androidchessclock.util.collections;
 import android.os.Parcel;
 import android.os.Parcelable;
 import org.jetbrains.annotations.NotNull;
+import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,11 +64,24 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         return changeList;
     }
 
+    @Override
+    public void move(int from, int to) {
+        CollectionUtilsEx.move(items, from, to);
+        Change<E> lastChange;
+        // Optimize for the repeated drag case
+        if (!changeList.changes.isEmpty() && (lastChange = changeList.changes.get(changeList.changes.size() - 1)) instanceof MoveChange && ((MoveChange<E>) lastChange).to == from) {
+            ((MoveChange<E>) lastChange).to = to;
+        } else {
+            changeList.changes.add(new MoveChange<>(from, to));
+        }
+    }
+
     private interface Change<E> {
 
         static <E> Change<E> readFromParcel(Parcel in, @NotNull Parcelable.Creator<E> elementReader) {
             Change<E> change;
-            switch (Change.ChangeKind.values()[in.readByte()]) {
+            int tag = in.readInt();
+            switch (Change.ChangeKind.values()[tag]) {
                 case APPEND:
                     E itemA = elementReader.createFromParcel(in);
                     change = new AddChange<>(itemA);
@@ -86,8 +100,13 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
                     E itemU = elementReader.createFromParcel(in);
                     change = new UpdateChange<>(itemU, indexU);
                     break;
+                case MOVE:
+                    int fromM = in.readInt();
+                    int toM = in.readInt();
+                    change = new MoveChange<>(fromM, toM);
+                    break;
                 default:
-                    throw new RuntimeException("Unknown tag");
+                    throw new RuntimeException("Unknown tag " + tag);
             }
             return change;
         }
@@ -95,26 +114,32 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         // Don't make this a method, so that the serialization format is in one place
         static <E extends Parcelable> void writeToParcel(Change<E> change, Parcel dest, int flags) {
             if (change instanceof AddChange) {
-                dest.writeByte((byte) ChangeKind.APPEND.ordinal());
+                dest.writeInt(ChangeKind.APPEND.ordinal());
                 ((AddChange<E>) change).item.writeToParcel(dest, flags);
             } else if (change instanceof InsertChange) {
-                dest.writeByte((byte) ChangeKind.INSERT.ordinal());
-                dest.writeInt(((InsertChange<?>) change).index);
+                dest.writeInt(ChangeKind.INSERT.ordinal());
+                dest.writeInt(((InsertChange<E>) change).index);
                 ((InsertChange<E>) change).item.writeToParcel(dest, flags);
-            } else if (change instanceof UpdateChange) {
-                dest.writeByte((byte) ChangeKind.UPDATE.ordinal());
-                dest.writeInt(((UpdateChange<?>) change).index);
-                ((UpdateChange<E>) change).item.writeToParcel(dest, flags);
             } else if (change instanceof RemoveChange) {
-                dest.writeByte((byte) ChangeKind.REMOVE.ordinal());
-                dest.writeInt(((RemoveChange<?>) change).index);
+                dest.writeInt(ChangeKind.REMOVE.ordinal());
+                dest.writeInt(((RemoveChange<E>) change).index);
+            } else if (change instanceof UpdateChange) {
+                dest.writeInt(ChangeKind.UPDATE.ordinal());
+                dest.writeInt(((UpdateChange<E>) change).index);
+                ((UpdateChange<E>) change).item.writeToParcel(dest, flags);
+            } else if (change instanceof MoveChange) {
+                dest.writeInt(ChangeKind.MOVE.ordinal());
+                dest.writeInt(((MoveChange<E>) change).from);
+                dest.writeInt(((MoveChange<E>) change).to);
             }
         }
 
-        void apply(List<E> applyTo);
+        void applyTo(List<E> applyTo);
+
+        void applyTo(SimpleMutableList<E> applyTo);
 
         enum ChangeKind {
-            APPEND, INSERT, REMOVE, UPDATE
+            APPEND, INSERT, REMOVE, UPDATE, MOVE
         }
     }
 
@@ -193,7 +218,13 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
 
         public void applyTo(List<E> applyTo) {
             for (Change<E> change : changes) {
-                change.apply(applyTo);
+                change.applyTo(applyTo);
+            }
+        }
+
+        public void applyTo(SimpleMutableList<E> applyTo) {
+            for (Change<E> change : changes) {
+                change.applyTo(applyTo);
             }
         }
     }
@@ -206,7 +237,12 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         }
 
         @Override
-        public void apply(List<E> applyTo) {
+        public void applyTo(List<E> applyTo) {
+            applyTo.add(item);
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
             applyTo.add(item);
         }
     }
@@ -221,7 +257,12 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         }
 
         @Override
-        public void apply(List<E> applyTo) {
+        public void applyTo(List<E> applyTo) {
+            applyTo.add(index, item);
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
             applyTo.add(index, item);
         }
     }
@@ -236,7 +277,12 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         }
 
         @Override
-        public void apply(List<E> applyTo) {
+        public void applyTo(List<E> applyTo) {
+            applyTo.set(index, item);
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
             applyTo.set(index, item);
         }
     }
@@ -249,23 +295,33 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         }
 
         @Override
-        public void apply(List<E> applyTo) {
+        public void applyTo(List<E> applyTo) {
+            applyTo.remove(index);
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
             applyTo.remove(index);
         }
     }
 
-    // FIXME: support our SimpleMutableList
+    private static class MoveChange<E> implements Change<E> {
+        private final int from;
+        private int to;
 
-//    private static class MoveChange<E> implements Change<E> {
-//        private final int from, to;
-//
-//        public MoveChange(int from, int to) {
-//            this.from = from;
-//            this.to = to;
-//        }
-//
-//        @Override
-//        public void apply(List<E> applyTo) {
-//        }
-//    }
+        public MoveChange(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public void applyTo(List<E> applyTo) {
+            CollectionUtilsEx.move(applyTo, from, to);
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
+            applyTo.move(from, to);
+        }
+    }
 }
