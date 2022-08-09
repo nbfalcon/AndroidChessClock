@@ -3,7 +3,6 @@ package org.nbfalcon.wseminar.androidchessclock.util.collections;
 import android.os.Parcel;
 import android.os.Parcelable;
 import org.jetbrains.annotations.NotNull;
-import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -254,4 +253,19 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
             applyTo.remove(index);
         }
     }
+
+    // FIXME: support our SimpleMutableList
+
+//    private static class MoveChange<E> implements Change<E> {
+//        private final int from, to;
+//
+//        public MoveChange(int from, int to) {
+//            this.from = from;
+//            this.to = to;
+//        }
+//
+//        @Override
+//        public void apply(List<E> applyTo) {
+//        }
+//    }
 }

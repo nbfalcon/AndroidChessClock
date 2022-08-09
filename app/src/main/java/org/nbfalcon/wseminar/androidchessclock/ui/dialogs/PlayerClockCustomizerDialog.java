@@ -29,10 +29,8 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     private final @NotNull OnTimeSet onTimeSet;
     private final boolean forPlayer;
     private TimeControlStageCustomizer stage1, stage2;
-    // FIXME: default true
     private AppCompatCheckBox setForBothPlayers;
     private ClockPairTemplate bindFrom;
-    // FIXME: investigate material textedit + button
     private EditText customTimeControlName;
     private boolean customTimeControlSaveAsClicked;
     private TabLayout stagesTabs;

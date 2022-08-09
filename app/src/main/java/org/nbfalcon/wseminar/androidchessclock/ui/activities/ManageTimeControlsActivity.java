@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
@@ -36,20 +37,43 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         ClockPairTemplate[] customTimeControls = CastUtils.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
         changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
-        ObservableList<ClockPairTemplate> backingList = new ObservableList<>(changesResult);
+        ObservableList<ClockPairTemplate> observableList = new ObservableList<>(changesResult);
 
         newTimeControlPreset = extras.getParcelable(KEY_NEW_TIME_CONTROL_PRESET);
 
         finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        timeControls.setAdapter(new TimeControlsAdapter(backingList));
+        timeControls.setAdapter(new TimeControlsAdapter(observableList));
+        new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+            }
+
+            @Override
+            public boolean onMove(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder, @NonNull @NotNull RecyclerView.ViewHolder target) {
+                // FIXME: the spinner does not keep whatever was selected previously; we need ids somehow
+
+                int from = viewHolder.getAdapterPosition();
+                int to = target.getAdapterPosition();
+                if (from != -1 && to != -1) {
+                    observableList.move(from, to);
+                    return true;
+                }
+                // This case no longer seems to happen
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull @NotNull RecyclerView.ViewHolder viewHolder, int direction) {
+            }
+        }).attachToRecyclerView(timeControls);
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
         addNewTimeControl.setOnClickListener((view) -> {
             PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(false, (dialog) -> {
-                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
-                        dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
+                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
 
                 @NotNull String name = dialog.getTimeControlName();
 
@@ -57,12 +81,11 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 if (dialog.shouldSetForBothPlayers()) {
                     newClockPairTemplate = new ClockPairTemplate(name, p1, null);
                 } else {
-                    SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(),
-                            dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
+                    SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
                     newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
                 }
 
-                backingList.add(newClockPairTemplate);
+                observableList.add(newClockPairTemplate);
             });
             clockDialog.setSettingWantSaveAs(false);
             clockDialog.bindFrom(newTimeControlPreset);

@@ -18,6 +18,47 @@ public class ObservableList<E> implements SimpleMutableList<E> {
         this.backingList = backingList;
     }
 
+    public static RecyclerView.AdapterDataObserver observerFromAdapter(RecyclerView.Adapter<?> adapter) {
+        return new RecyclerView.AdapterDataObserver() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void onChanged() {
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                adapter.notifyItemRangeChanged(positionStart, itemCount);
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable @org.jetbrains.annotations.Nullable Object payload) {
+                adapter.notifyItemRangeChanged(positionStart, itemCount, payload);
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                adapter.notifyItemRangeInserted(positionStart, itemCount);
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                adapter.notifyItemRangeRemoved(positionStart, itemCount);
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                if (itemCount == 1) {
+                    adapter.notifyItemMoved(fromPosition, toPosition);
+                } else {
+                    // Not really used by us, but let's implement the contract correctly anyway
+                    adapter.notifyItemRangeRemoved(fromPosition, itemCount);
+                    adapter.notifyItemRangeInserted(toPosition < fromPosition ? toPosition : toPosition - itemCount, itemCount);
+                }
+            }
+        };
+    }
+
     public void registerAdapterDataObserver(@NotNull RecyclerView.AdapterDataObserver observer) {
         synchronized (observers) {
             if (!observers.contains(observer)) {
@@ -87,39 +128,23 @@ public class ObservableList<E> implements SimpleMutableList<E> {
         fire(observer -> observer.onItemRangeRemoved(0, sizeBefore));
     }
 
-    public static RecyclerView.AdapterDataObserver observerFromAdapter(RecyclerView.Adapter<?> adapter) {
-        return new RecyclerView.AdapterDataObserver() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onChanged() {
-                adapter.notifyDataSetChanged();
+    @Override
+    public void move(int from, int to) {
+        // Move
+        if (from < to) {
+            for (int i = from; i < to; i++) {
+                E tmp = get(i);
+                backingList.set(i, get(i + 1));
+                backingList.set(i + 1, tmp);
             }
+        } else if (to < from) {
+            for (int i = from; i > to; i--) {
+                E tmp = get(i);
+                backingList.set(i, get(i - 1));
+                backingList.set(i - 1, tmp);
+            }
+        }
 
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount) {
-                adapter.notifyItemRangeChanged(positionStart, itemCount);
-            }
-
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable @org.jetbrains.annotations.Nullable Object payload) {
-                adapter.notifyItemRangeChanged(positionStart, itemCount, payload);
-            }
-
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                adapter.notifyItemRangeInserted(positionStart, itemCount);
-            }
-
-            @Override
-            public void onItemRangeRemoved(int positionStart, int itemCount) {
-                adapter.notifyItemRangeRemoved(positionStart, itemCount);
-            }
-
-            @Override
-            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                adapter.notifyItemRangeRemoved(fromPosition, itemCount);
-                adapter.notifyItemRangeInserted(toPosition < fromPosition ? toPosition : toPosition - itemCount, itemCount);
-            }
-        };
+        fire(observer -> observer.onItemRangeMoved(from, to, 1));
     }
 }
