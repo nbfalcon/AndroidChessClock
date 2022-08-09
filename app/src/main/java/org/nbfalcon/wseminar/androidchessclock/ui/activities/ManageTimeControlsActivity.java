@@ -1,13 +1,16 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -174,7 +177,20 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                     customizerDialog.show(getSupportFragmentManager(), "FIXME meow");
                 });
                 this.deleteRow = itemView.findViewById(R.id.deleteRow);
-                deleteRow.setOnClickListener((view) -> backingList.remove(getAdapterPosition()));
+                deleteRow.setOnClickListener((view) -> {
+                    String message = String.format("Really delete time control '%s' forever?",
+                            backingList.get(getAdapterPosition()));
+                    AlertDialog confirm = new AlertDialog.Builder(itemView.getContext())
+                            .setIcon(R.drawable.ic_material_delete_forever)
+                            .setTitle("Really delete?")
+                            .setMessage(message)
+                            .setPositiveButton("Ok", (dialog, which) -> {
+                                backingList.remove(getAdapterPosition());
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .create();
+                    confirm.show();
+                });
             }
         }
     }
