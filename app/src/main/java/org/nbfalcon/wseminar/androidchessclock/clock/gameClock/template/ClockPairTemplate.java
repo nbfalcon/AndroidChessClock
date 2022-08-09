@@ -22,11 +22,9 @@ public class ClockPairTemplate implements Parcelable {
     };
 
     public static final ClockPairTemplate[] EMPTY_ARRAY = new ClockPairTemplate[0];
-
-    private final @NotNull String name;
+    private @NotNull String name;
     private PlayerClockTemplate player1;
     private @Nullable PlayerClockTemplate player2;
-
     public ClockPairTemplate(@NotNull String name, @NotNull PlayerClockTemplate player1, @Nullable PlayerClockTemplate player2) {
         this.name = name;
         this.player1 = player1;
@@ -37,6 +35,10 @@ public class ClockPairTemplate implements Parcelable {
         this.name = in.readString();
         this.player1 = ParcelCompatEx.readParcelable(in);
         this.player2 = ParcelCompatEx.readBoolean(in) ? ParcelCompatEx.readParcelable(in) : null;
+    }
+
+    public void setName(@NotNull String name) {
+        this.name = name;
     }
 
     public ClockPair create() {

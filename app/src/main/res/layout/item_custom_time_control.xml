@@ -5,16 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <EditText
         android:id="@+id/label"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:gravity="center_vertical"
         app:layout_constraintBottom_toBottomOf="@+id/deleteRow"
         app:layout_constraintEnd_toStartOf="@+id/deleteRow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:hint="Label..." />
+        tools:hint="Label..."
+        android:inputType="text"
+        android:autofillHints="" />
 
     <ImageButton
         android:id="@+id/deleteRow"

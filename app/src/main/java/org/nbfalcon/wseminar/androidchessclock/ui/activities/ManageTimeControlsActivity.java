@@ -1,14 +1,14 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +21,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleSt
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.CastUtils;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
 
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        timeControls.setAdapter(new TimeControlsAdapter(observableList));
+        timeControls.setAdapter(new TimeControlsAdapter(observableList, changesResult));
         new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
             public int getMovementFlags(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder) {
@@ -115,10 +116,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
     private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {
         private final ObservableList<ClockPairTemplate> backingList;
+        private final SimpleMutableList<ClockPairTemplate> backingList2;
 
-        private TimeControlsAdapter(ObservableList<ClockPairTemplate> backingList) {
+        private TimeControlsAdapter(ObservableList<ClockPairTemplate> backingList, SimpleMutableList<ClockPairTemplate> backingList2) {
             this.backingList = backingList;
             backingList.registerAdapterDataObserver(ObservableList.observerFromAdapter(this));
+
+            this.backingList2 = backingList2;
         }
 
         @NonNull
@@ -131,8 +135,10 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull @NotNull ManageTimeControlsActivity.TimeControlsAdapter.ViewHolder holder, int position) {
+            holder.currentlyBinding = true;
             ClockPairTemplate item = backingList.get(position);
             holder.label.setText(item.toString());
+            holder.currentlyBinding = false;
         }
 
         @Override
@@ -141,13 +147,34 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            public final TextView label;
+            public final EditText label;
             public final ImageButton editRow;
             public final ImageButton deleteRow;
+            public boolean currentlyBinding;
 
             public ViewHolder(@NonNull @NotNull View itemView) {
                 super(itemView);
                 this.label = itemView.findViewById(R.id.label);
+                label.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        if (!currentlyBinding) {
+                            int myIndex = getAdapterPosition();
+                            ClockPairTemplate thisItem = backingList2.get(myIndex);
+                            thisItem.setName(s.toString());
+                            // FIXME: proper SQL?
+                            backingList2.set(myIndex, thisItem);
+                        }
+                    }
+                });
 
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
