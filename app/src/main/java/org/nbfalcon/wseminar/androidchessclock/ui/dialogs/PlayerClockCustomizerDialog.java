@@ -24,6 +24,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.android.ViewFlipperUtils;
 // FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: code to start this dialog is copy-pasted 3x; this needs a refactoring
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
+// FIXME: timeControl/timeMode naming is inconsistent
 public class PlayerClockCustomizerDialog extends DialogFragment {
     private final @NotNull OnTimeSet onTimeSet;
     private final boolean forPlayer;
@@ -35,6 +36,8 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
     private EditText customTimeControlName;
     private boolean customTimeControlSaveAsClicked;
     private TabLayout stagesTabs;
+
+    private boolean settingWantSaveAs = true;
 
     public PlayerClockCustomizerDialog(boolean forPlayer, @NotNull OnTimeSet onTimeSet) {
         this.forPlayer = forPlayer;
@@ -65,20 +68,26 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
         customTimeControlName = view.findViewById(R.id.customTimeControlName);
         // FIXME: cute "(1), (2), (3)" automatic increment?
         customTimeControlName.setText(bindFrom.toString());
+
         customTimeControlSaveAsClicked = false;
         View timeControlSaveAs = view.findViewById(R.id.customTimeControlSaveAs);
-        timeControlSaveAs.setOnClickListener((v) -> {
-            InputMethodService inputMethodService = ContextCompat.getSystemService(customTimeControlName.getContext(), InputMethodService.class);
-            if (inputMethodService != null) {
-                // Hide the keyboard so that the text the user has typed will be committed and available on the next getText()
-                // call (otherwise that returns the empty string).
-                inputMethodService.onFinishInput();
-            }
+        if (settingWantSaveAs) {
+            timeControlSaveAs.setOnClickListener((v) -> {
+                InputMethodService inputMethodService = ContextCompat.getSystemService(customTimeControlName.getContext(), InputMethodService.class);
+                if (inputMethodService != null) {
+                    // Hide the keyboard so that the text the user has typed will be committed and available on the next getText()
+                    // call (otherwise that returns the empty string).
+                    inputMethodService.onFinishInput();
+                }
 
-            customTimeControlSaveAsClicked = true;
-            dismiss();
-            onTimeSet.setTime(this);
-        });
+                customTimeControlSaveAsClicked = true;
+                dismiss();
+                onTimeSet.setTime(this);
+            });
+        } else {
+            timeControlSaveAs.setVisibility(View.GONE);
+            timeControlSaveAs.setEnabled(false);
+        }
 
         stagesTabs = view.findViewById(R.id.stagesTabs);
         ViewFlipper stagesFlipper = view.findViewById(R.id.stagesFlipper);
@@ -93,10 +102,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
         });
         setForBothPlayers.setChecked(bindFrom.setForBothPlayers());
 
-        return builder.setView(view)
-                .setPositiveButton("Accept", (dialog, which) -> onTimeSet.setTime(this))
-                .setNegativeButton("Cancel", null)
-                .create();
+        return builder.setView(view).setPositiveButton("Accept", (dialog, which) -> onTimeSet.setTime(this)).setNegativeButton("Cancel", null).create();
     }
 
     public TimeControlStageCustomizer getStage1OrBoth() {
@@ -126,6 +132,10 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
 
     public HowExited getResultType() {
         return customTimeControlSaveAsClicked ? HowExited.CREATE_NEW : HowExited.OK;
+    }
+
+    public void setSettingWantSaveAs(boolean settingWantSaveAs) {
+        this.settingWantSaveAs = settingWantSaveAs;
     }
 
     public enum HowExited {

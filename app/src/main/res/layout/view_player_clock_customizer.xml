@@ -8,19 +8,18 @@
     <EditText
         android:id="@+id/customTimeControlName"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/timeControlCustomizerSaveAsSize"
         android:ems="10"
         android:hint="Save as..."
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="@id/customTimeControlSaveAs"
         app:layout_constraintEnd_toStartOf="@+id/customTimeControlSaveAs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/customTimeControlSaveAs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/timeControlCustomizerSaveAsSize"
+        android:layout_height="@dimen/timeControlCustomizerSaveAsSize"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/customTimeControlName"
         app:srcCompat="@drawable/ic_material_save" />

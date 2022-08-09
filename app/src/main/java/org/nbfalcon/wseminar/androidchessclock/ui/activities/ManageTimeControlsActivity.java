@@ -47,7 +47,6 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
         addNewTimeControl.setOnClickListener((view) -> {
-            // FIXME: do we really need a save button here, if the user can just press ok?
             PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(false, (dialog) -> {
                 SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME",
                         dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
@@ -65,6 +64,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
                 backingList.add(newClockPairTemplate);
             });
+            clockDialog.setSettingWantSaveAs(false);
             clockDialog.bindFrom(newTimeControlPreset);
             clockDialog.show(getSupportFragmentManager(), "FIXME meow");
         });
@@ -146,6 +146,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             backingList.set(index, newClockPairTemplate);
                         }
                     });
+                    customizerDialog.setSettingWantSaveAs(false);
                     customizerDialog.bindFrom(backingList.get(getAdapterPosition()));
                     customizerDialog.show(getSupportFragmentManager(), "FIXME meow");
                 });
