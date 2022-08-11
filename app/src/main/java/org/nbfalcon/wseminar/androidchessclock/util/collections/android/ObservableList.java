@@ -66,6 +66,31 @@ public class ObservableList<E> implements SimpleMutableList<E> {
             public void onChanged() {
                 observer.onChanged();
             }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable @org.jetbrains.annotations.Nullable Object payload) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                onChanged();
+            }
         };
     }
 
