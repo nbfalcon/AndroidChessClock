@@ -199,7 +199,6 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             backingList.set(index, newClockPairTemplate);
                         }
                     });
-                    customizerDialog.setSettingWantSaveAs(false);
                     customizerDialog.bindFrom(backingList.get(getAdapterPosition()));
                     customizerDialog.show(getSupportFragmentManager(), "FIXME meow");
                 });
