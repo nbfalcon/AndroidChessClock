@@ -48,7 +48,8 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        timeControls.setAdapter(new TimeControlsAdapter(observableList, changesResult));
+        TimeControlsAdapter tcAdapter = new TimeControlsAdapter(observableList, changesResult);
+        timeControls.setAdapter(tcAdapter);
         new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
             public int getMovementFlags(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder) {
@@ -90,6 +91,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 }
 
                 observableList.add(newClockPairTemplate);
+                tcAdapter.onAdd();
             });
             clockDialog.setSettingWantSaveAs(false);
             clockDialog.bindFrom(newTimeControlPreset);
@@ -117,6 +119,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {
         private final ObservableList<ClockPairTemplate> backingList;
         private final SimpleMutableList<ClockPairTemplate> backingList2;
+        private RecyclerView attachedTo = null;
 
         private TimeControlsAdapter(ObservableList<ClockPairTemplate> backingList, SimpleMutableList<ClockPairTemplate> backingList2) {
             this.backingList = backingList;
@@ -139,11 +142,21 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
             ClockPairTemplate item = backingList.get(position);
             holder.label.setText(item.toString());
             holder.currentlyBinding = false;
+
+            if (getItemCount() == 1) {
+                holder.deleteRow.setEnabled(false);
+            }
         }
 
         @Override
         public int getItemCount() {
             return backingList.size();
+        }
+
+        @Override
+        public void onAttachedToRecyclerView(@NonNull @NotNull RecyclerView recyclerView) {
+            // We don't care about more than one view currently
+            this.attachedTo = recyclerView;
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
@@ -195,6 +208,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
                         if (howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW) {
                             backingList.add(newClockPairTemplate);
+                            onAdd();
                         } else {
                             backingList.set(index, newClockPairTemplate);
                         }
@@ -204,6 +218,9 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 });
                 this.deleteRow = itemView.findViewById(R.id.deleteRow);
                 deleteRow.setOnClickListener((view) -> {
+                    // Don't delete the last item; that's illegal
+                    if (getItemCount() <= 1) return;
+
                     String message = String.format("Really delete time control '%s' forever?",
                             backingList.get(getAdapterPosition()));
                     AlertDialog confirm = new AlertDialog.Builder(itemView.getContext())
@@ -212,11 +229,29 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             .setMessage(message)
                             .setPositiveButton("Ok", (dialog, which) -> {
                                 backingList.remove(getAdapterPosition());
+                                handleLastItemLeft();
                             })
                             .setNegativeButton("Cancel", null)
                             .create();
                     confirm.show();
                 });
+            }
+        }
+
+        public void handleLastItemLeft() {
+            // We have one more left, so disable the delete buttons
+            if (getItemCount() == 1) {
+                ViewHolder remaining = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
+                assert remaining != null;
+                remaining.deleteRow.setEnabled(false);
+            }
+        }
+
+        public void onAdd() {
+            if (getItemCount() == 2) {
+                ViewHolder prevSingle = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
+                assert prevSingle != null;
+                prevSingle.deleteRow.setEnabled(true);
             }
         }
     }
