@@ -5,12 +5,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +52,13 @@ public class ChessClockActivity extends AppCompatActivity {
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
 
-        this.theClock = new ChessClock(view, timer);
+        if (savedInstanceState != null) {
+            theClock = savedInstanceState.getParcelable("theClock");
+        } else {
+            theClock = new ChessClock();
+        }
+        theClock.setView(view);
+        theClock.setTimer(timer);
         view.injectClockModel(theClock);
         view.setupCallbacks();
 
@@ -90,6 +98,15 @@ public class ChessClockActivity extends AppCompatActivity {
             changes.applyTo(timeControlsList.getBackingList());
             timeControlsList.notifyDataSetChanged();
         });
+    }
+
+    @Override
+    public void onRestoreInstanceState(@androidx.annotation.Nullable Bundle savedInstanceState, @androidx.annotation.Nullable PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+
+        if (persistentState != null) {
+            timeModePicker.setSelection(persistentState.getInt("selectedTimeControl"));
+        }
     }
 
     @Override
@@ -153,9 +170,25 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (theClock.getState() == ChessClock.State.TICKING) {
+            theClock.onPause();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         dbHelper.close();
         super.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putParcelable("theClock", theClock);
+        // Don't persist the clock across restarts; if the user closes the app, chances are they won't care about the last game
+        outPersistentState.putInt("selectedTimeControl", timeModePicker.getSelectedItemPosition());
     }
 
     private class ChessClockUiViewImpl implements ChessClock.ChessClockView {

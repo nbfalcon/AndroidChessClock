@@ -42,14 +42,18 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_time_controls);
 
-        Bundle extras = getIntent().getExtras();
-        ClockPairTemplate[] customTimeControls = CollectionUtilsEx.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
-        changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
+        if (savedInstanceState != null) {
+            changesResult = savedInstanceState.getParcelable("changesResult");
+            newTimeControlPreset = savedInstanceState.getParcelable("newTimeControlPreset");
+        } else {
+            Bundle extras = getIntent().getExtras();
+
+            ClockPairTemplate[] customTimeControls = CollectionUtilsEx.downCastArray(extras.getParcelableArray(KEY_CUSTOM_TIME_CONTROLS), ClockPairTemplate.EMPTY_ARRAY);
+            changesResult = new ChangeCollectorList<>(Arrays.asList(customTimeControls), ClockPairTemplate.class);
+
+            newTimeControlPreset = extras.getParcelable(KEY_NEW_TIME_CONTROL_PRESET);
+        }
         ObservableList<ClockPairTemplate> observableList = new ObservableList<>(changesResult);
-
-        newTimeControlPreset = extras.getParcelable(KEY_NEW_TIME_CONTROL_PRESET);
-
-        finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
         tcAdapter = new TimeControlsAdapter(observableList, changesResult);
@@ -105,11 +109,11 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        finishSetResult();
+        setResultForFinish();
         super.onBackPressed();
     }
 
-    private void finishSetResult() {
+    private void setResultForFinish() {
         Intent result = new Intent();
         result.putExtra(KEY_RESULT_CHANGES, changesResult.getChangeList());
         setResult(RESULT_OK, result);
@@ -144,6 +148,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("changesResult", changesResult);
+        outState.putParcelable("newTimeControlPreset", newTimeControlPreset);
     }
 
     private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {

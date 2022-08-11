@@ -9,13 +9,46 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableList<E> {
+public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableList<E>, Parcelable {
+    public static final Creator<ChangeCollectorList<?>> CREATOR = new Creator<ChangeCollectorList<?>>() {
+        @Override
+        public ChangeCollectorList<?> createFromParcel(Parcel in) {
+            return new ChangeCollectorList<>(in);
+        }
+
+        @Override
+        public ChangeCollectorList<?>[] newArray(int size) {
+            return new ChangeCollectorList[size];
+        }
+    };
+
     private final ArrayList<E> items;
     private final ChangeList<E> changeList;
 
     public ChangeCollectorList(Collection<E> src, Class<E> parcelClass) {
         this.items = new ArrayList<>(src);
         this.changeList = new ChangeList<>(new ArrayList<>(), parcelClass);
+    }
+
+    protected ChangeCollectorList(Parcel in) {
+        changeList = in.readParcelable(this.getClass().getClassLoader());
+        try {
+            //noinspection unchecked
+            items = in.createTypedArrayList((Parcelable.Creator<E>)changeList.parcelClass.getField("CREATOR").get(null));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(changeList, flags);
+        dest.writeTypedList(items);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public void add(E item) {

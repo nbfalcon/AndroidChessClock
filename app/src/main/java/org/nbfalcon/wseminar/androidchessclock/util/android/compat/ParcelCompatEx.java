@@ -23,7 +23,7 @@ public class ParcelCompatEx {
     public static <T> Parcelable.Creator<T> readParcelableCreator(Parcel src) {
         String clName = src.readString();
         try {
-            Class<?> clazz = Class.forName(clName);
+            Class<T> clazz = (Class<T>) Class.forName(clName);
             return (Parcelable.Creator<T>) clazz.getField("CREATOR").get(null);
         } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);

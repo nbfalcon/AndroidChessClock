@@ -1,27 +1,55 @@
 package org.nbfalcon.wseminar.androidchessclock.clock;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.TimeControl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
+import org.nbfalcon.wseminar.androidchessclock.util.android.compat.ParcelCompatEx;
 
-public class ChessClock implements Timer.TimerHandler {
-    private final ChessClockView view;
-    private final Timer timer;
+public class ChessClock implements Timer.TimerHandler, Parcelable {
+    public static final Creator<ChessClock> CREATOR = new Creator<ChessClock>() {
+        @Override
+        public ChessClock createFromParcel(Parcel in) {
+            return new ChessClock(in);
+        }
+
+        @Override
+        public ChessClock[] newArray(int size) {
+            return new ChessClock[size];
+        }
+    };
+
+    private ChessClockView view;
+    private Timer timer;
     private boolean currentPlayer = false;
     private State currentState = State.INIT;
     private ClockPairTemplate clocksTemplate;
     private ClockPair clocks;
 
-    public ChessClock(ChessClockView view, Timer timer) {
-        this.timer = timer;
-        this.view = view;
+    public ChessClock() {
+    }
+
+    protected ChessClock(Parcel in) {
+        currentPlayer = ParcelCompatEx.readBoolean(in);
+        currentState = State.values()[in.readInt()];
+        clocksTemplate = in.readParcelable(ClockPairTemplate.class.getClassLoader());
+        clocks = in.readParcelable(ClockPair.class.getClassLoader());
     }
 
     private static long getTimeHint(TimeControl clock) {
         return Math.min(-1, clock.getTimeLeft());
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+    public void setView(ChessClockView view) {
+        this.view = view;
     }
 
     public boolean getCurrentPlayer() {
@@ -90,13 +118,6 @@ public class ChessClock implements Timer.TimerHandler {
         currentPlayer = !currentPlayer;
     }
 
-    public void setClocks(ClockPairTemplate clocks) {
-        assert currentState == State.INIT;
-        clocksTemplate = clocks;
-        this.clocks = clocksTemplate.create();
-        resetViewTimers();
-    }
-
     private void resetViewTimers() {
         if (view != null) {
             view.onUpdateTime(false, this.clocks.getClockFor(false).getTimeLeft());
@@ -106,6 +127,26 @@ public class ChessClock implements Timer.TimerHandler {
 
     public ClockPairTemplate getClocks() {
         return clocksTemplate;
+    }
+
+    public void setClocks(ClockPairTemplate clocks) {
+        assert currentState == State.INIT;
+        clocksTemplate = clocks;
+        this.clocks = clocksTemplate.create();
+        resetViewTimers();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        ParcelCompatEx.writeBoolean(dest, currentPlayer);
+        dest.writeInt(currentState.ordinal());
+        dest.writeParcelable(clocksTemplate, flags);
+        dest.writeParcelable((Parcelable) clocks, flags);
     }
 
     public enum State {
