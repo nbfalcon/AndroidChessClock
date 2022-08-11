@@ -29,7 +29,6 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
 import org.nbfalcon.wseminar.androidchessclock.util.android.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
-import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
 
 public class ChessClockActivity extends AppCompatActivity {
 
@@ -92,7 +91,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.chess_clock_threedot, menu);
+        getMenuInflater().inflate(R.menu.activity_chess_clock_threedot, menu);
 
         menuRestartGame = menu.findItem(R.id.menuRestartGame);
         menuRestartGame.setEnabled(theClock.getState() == ChessClock.State.PAUSED || theClock.getState() == ChessClock.State.GAME_OVER);

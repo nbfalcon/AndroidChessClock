@@ -58,6 +58,8 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
     @Override
     public void clear() {
         items.clear();
+        changeList.changes.clear();
+        changeList.changes.add(ClearChange.get());
     }
 
     public ChangeList<E> getChangeList() {
@@ -105,6 +107,9 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
                     int toM = in.readInt();
                     change = new MoveChange<>(fromM, toM);
                     break;
+                case CLEAR:
+                    change = ClearChange.get();
+                    break;
                 default:
                     throw new RuntimeException("Unknown tag " + tag);
             }
@@ -131,6 +136,8 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
                 dest.writeInt(ChangeKind.MOVE.ordinal());
                 dest.writeInt(((MoveChange<E>) change).from);
                 dest.writeInt(((MoveChange<E>) change).to);
+            } else if (change instanceof ClearChange) {
+                dest.writeInt(ChangeKind.CLEAR.ordinal());
             }
         }
 
@@ -139,7 +146,7 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         void applyTo(SimpleMutableList<E> applyTo);
 
         enum ChangeKind {
-            APPEND, INSERT, REMOVE, UPDATE, MOVE
+            APPEND, INSERT, REMOVE, UPDATE, MOVE, CLEAR
         }
     }
 
@@ -322,6 +329,29 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         @Override
         public void applyTo(SimpleMutableList<E> applyTo) {
             applyTo.move(from, to);
+        }
+    }
+
+    // "case object ClearChange implements Change[Nothing]"
+    private static class ClearChange<E> implements Change<E> {
+        private static final ClearChange<?> INSTANCE = new ClearChange<>();
+
+        private ClearChange() {
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <E> ClearChange<E> get() {
+            return (ClearChange<E>) INSTANCE;
+        }
+
+        @Override
+        public void applyTo(List<E> applyTo) {
+            applyTo.clear();
+        }
+
+        @Override
+        public void applyTo(SimpleMutableList<E> applyTo) {
+            applyTo.clear();
         }
     }
 }

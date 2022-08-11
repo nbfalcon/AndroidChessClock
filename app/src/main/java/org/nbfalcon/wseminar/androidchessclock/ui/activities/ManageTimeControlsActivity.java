@@ -1,10 +1,12 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
@@ -32,6 +35,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
     private ChangeCollectorList<ClockPairTemplate> changesResult;
     private ClockPairTemplate newTimeControlPreset;
+    private TimeControlsAdapter tcAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +52,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         finishSetResult();
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        TimeControlsAdapter tcAdapter = new TimeControlsAdapter(observableList, changesResult);
+        tcAdapter = new TimeControlsAdapter(observableList, changesResult);
         timeControls.setAdapter(tcAdapter);
         new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
@@ -112,11 +116,38 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_manage_time_controls_threedot, menu);
+
+        menu.findItem(R.id.menuResetTimeControls).setOnMenuItemClickListener(item -> {
+            @SuppressLint("NotifyDataSetChanged") AlertDialog confirm = new AlertDialog.Builder(this)
+                    .setIcon(R.drawable.ic_material_reset_device)
+                    .setTitle("Reset Time Controls")
+                    .setMessage("Really reset all time controls to default?\nYour custom time controls will be deleted.")
+                    .setPositiveButton("Ok", (dialog, which) -> {
+                        changesResult.clear();
+                        for (ClockPairTemplate template : BuiltinTimeControls.BUILTIN) {
+                            changesResult.add(template);
+                        }
+                        // Well, the entire dataset /has/ changed
+                        tcAdapter.notifyDataSetChanged();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .create();
+            confirm.show();
+            return true;
+        });
+
+        return true;
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
     }
 
     private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {
+
         private final ObservableList<ClockPairTemplate> backingList;
         private final SimpleMutableList<ClockPairTemplate> backingList2;
         private RecyclerView attachedTo = null;
@@ -157,6 +188,23 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         public void onAttachedToRecyclerView(@NonNull @NotNull RecyclerView recyclerView) {
             // We don't care about more than one view currently
             this.attachedTo = recyclerView;
+        }
+
+        public void handleLastItemLeft() {
+            // We have one more left, so disable the delete buttons
+            if (getItemCount() == 1) {
+                ViewHolder remaining = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
+                assert remaining != null;
+                remaining.deleteRow.setEnabled(false);
+            }
+        }
+
+        public void onAdd() {
+            if (getItemCount() == 2) {
+                ViewHolder prevSingle = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
+                assert prevSingle != null;
+                prevSingle.deleteRow.setEnabled(true);
+            }
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
@@ -235,23 +283,6 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             .create();
                     confirm.show();
                 });
-            }
-        }
-
-        public void handleLastItemLeft() {
-            // We have one more left, so disable the delete buttons
-            if (getItemCount() == 1) {
-                ViewHolder remaining = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
-                assert remaining != null;
-                remaining.deleteRow.setEnabled(false);
-            }
-        }
-
-        public void onAdd() {
-            if (getItemCount() == 2) {
-                ViewHolder prevSingle = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
-                assert prevSingle != null;
-                prevSingle.deleteRow.setEnabled(true);
             }
         }
     }

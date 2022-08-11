@@ -112,6 +112,8 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     @Override
     public void clear() {
         db.execSQL("DELETE FROM " + table);
+        items.clear();
+        ids.clear();
     }
 
     @Override
