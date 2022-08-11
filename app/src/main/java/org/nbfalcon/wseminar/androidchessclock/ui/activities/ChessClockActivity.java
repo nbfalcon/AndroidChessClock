@@ -39,6 +39,8 @@ public class ChessClockActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> manageTimeControlsLauncher;
     private ClockPairTemplate theCustomItem;
 
+    private StorageDBHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +54,8 @@ public class ChessClockActivity extends AppCompatActivity {
         view.injectClockModel(theClock);
         view.setupCallbacks();
 
-        SQLiteDatabase db = new StorageDBHelper(getApplicationContext()).getWritableDatabase();
+        dbHelper = new StorageDBHelper(getApplicationContext());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
         SimpleMutableList<ClockPairTemplate> timeControlsDBList = StorageDBHelper.getTimeControlsTableList(db);
         timeControlsList = new SimpleMutableListAdapter<>(timeControlsDBList,
                 getApplication(), android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
@@ -147,6 +150,12 @@ public class ChessClockActivity extends AppCompatActivity {
         });
         clockDialog.bindFrom(theClock.getClocks());
         clockDialog.show(getSupportFragmentManager(), "FIXME meow");
+    }
+
+    @Override
+    public void onDestroy() {
+        dbHelper.close();
+        super.onDestroy();
     }
 
     private class ChessClockUiViewImpl implements ChessClock.ChessClockView {
