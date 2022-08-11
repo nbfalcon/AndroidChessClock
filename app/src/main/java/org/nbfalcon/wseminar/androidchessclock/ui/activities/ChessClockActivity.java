@@ -35,7 +35,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
-    private ObservableList<ClockPairTemplate> timeControlsList;
+    private SimpleMutableListAdapter<ClockPairTemplate> timeControlsList;
     private AppCompatSpinner timeModePicker;
     private ActivityResultLauncher<Intent> manageTimeControlsLauncher;
     private ClockPairTemplate theCustomItem;
@@ -55,26 +55,24 @@ public class ChessClockActivity extends AppCompatActivity {
 
         SQLiteDatabase db = new StorageDBHelper(getApplicationContext()).getWritableDatabase();
         SimpleMutableList<ClockPairTemplate> timeControlsDBList = StorageDBHelper.getTimeControlsTableList(db);
-        timeControlsList = new ObservableList<>(timeControlsDBList);
-
-        SimpleMutableListAdapter<ClockPairTemplate> timeControlsAdapter = new SimpleMutableListAdapter<>(timeControlsList,
+        timeControlsList = new SimpleMutableListAdapter<>(timeControlsDBList,
                 getApplication(), android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
         theCustomItem = new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
-        timeControlsAdapter.setBonusItem(theCustomItem);
+        timeControlsList.setBonusItem(theCustomItem);
 
         timeModePicker = findViewById(R.id.timeModePicker);
-        timeModePicker.setAdapter(timeControlsAdapter);
+        timeModePicker.setAdapter(timeControlsList);
         timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state",
                 //  a rather ugly HACK; showConfigureDialog will select either "Custom" or the newly created time control
-                if (position == timeControlsList.size() /* == "Custom" */) {
+                if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
                     ClockPairTemplate prevSelected = theClock.getClocks();
                     theCustomItem.bindFrom(prevSelected);
                     showConfigureClockDialog(false);
                 } else {
-                    theClock.setClocks(timeControlsList.get(position));
+                    theClock.setClocks(timeControlsList.getBackingList().get(position));
                 }
             }
 
@@ -87,7 +85,8 @@ public class ChessClockActivity extends AppCompatActivity {
             Intent data = result.getData();
             assert data != null;
             ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
-            changes.applyTo(timeControlsList); // FIXME: trigger notifyDataSetChanged() once
+            changes.applyTo(timeControlsList.getBackingList());
+            timeControlsList.notifyDataSetChanged();
         });
     }
 
@@ -109,7 +108,7 @@ public class ChessClockActivity extends AppCompatActivity {
         item.setOnMenuItemClickListener(menuItem -> {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
-                    SimpleMutableList.toArray(timeControlsList, ClockPairTemplate.EMPTY_ARRAY));
+                    SimpleMutableList.toArray(timeControlsList.getBackingList(), ClockPairTemplate.EMPTY_ARRAY));
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeModePicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
