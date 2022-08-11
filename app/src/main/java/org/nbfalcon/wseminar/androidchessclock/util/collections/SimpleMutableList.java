@@ -1,5 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.util.collections;
 
+import java.util.Arrays;
+
 public interface SimpleMutableList<E> {
     void add(E item);
 
@@ -34,5 +36,15 @@ public interface SimpleMutableList<E> {
                 set(i - 1, tmp);
             }
         }
+    }
+
+    // FIXME: probably optmize this
+    static<E> E[] toArray(SimpleMutableList<E> src, E[] empty) {
+        int length = src.size();
+        E[] result = Arrays.copyOf(empty, length);
+        for (int i = 0; i < length; i++) {
+            result[i] = src.get(i);
+        }
+        return result;
     }
 }

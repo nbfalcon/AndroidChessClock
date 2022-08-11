@@ -1,6 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,22 +22,23 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPai
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
+import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
+import org.nbfalcon.wseminar.androidchessclock.util.android.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
 
 public class ChessClockActivity extends AppCompatActivity {
 
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
-    private ArrayAdapter<ClockPairTemplate> timeControlSelection;
+    private ObservableList<ClockPairTemplate> timeControlsList;
     private AppCompatSpinner timeModePicker;
-    private ArrayList<ClockPairTemplate> timeControlsList;
     private ActivityResultLauncher<Intent> manageTimeControlsLauncher;
+    private ClockPairTemplate theCustomItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,32 +53,28 @@ public class ChessClockActivity extends AppCompatActivity {
         view.injectClockModel(theClock);
         view.setupCallbacks();
 
-        // FIXME
-//        theClock.setClocks(new ClockPairTemplate(
-//                new SingleStageTimeControlTemplate("5+0", 300 * 1000, 0, TimeControlStageTemplate.Type.FISHER),
-//                new SingleStageTimeControlTemplate("3s+0 (DEBUG)", 3 * 1000, 0, TimeControlStageTemplate.Type.FISHER)));
+        SQLiteDatabase db = new StorageDBHelper(getApplicationContext()).getWritableDatabase();
+        SimpleMutableList<ClockPairTemplate> timeControlsDBList = StorageDBHelper.getTimeControlsTableList(db);
+        timeControlsList = new ObservableList<>(timeControlsDBList);
+
+        SimpleMutableListAdapter<ClockPairTemplate> timeControlsAdapter = new SimpleMutableListAdapter<>(timeControlsList,
+                getApplication(), android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
+        theCustomItem = new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
+        timeControlsAdapter.setBonusItem(theCustomItem);
 
         timeModePicker = findViewById(R.id.timeModePicker);
-        timeControlsList = new ArrayList<>(Arrays.asList(BuiltinTimeControls.BUILTIN));
-        timeControlSelection = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item,
-                // Arrays.asList returns a list that cannot be added to
-                timeControlsList);
-        timeControlSelection.add(new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null));
-        timeModePicker.setAdapter(timeControlSelection);
+        timeModePicker.setAdapter(timeControlsAdapter);
         timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ClockPairTemplate prevSelected = theClock.getClocks();
-
-                ClockPairTemplate nowSelected = (ClockPairTemplate) timeModePicker.getItemAtPosition(position);
-
                 // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state",
                 //  a rather ugly HACK; showConfigureDialog will select either "Custom" or the newly created time control
-                if (position == parent.getCount() - 1 /* == "Custom" */) {
-                    nowSelected.bindFrom(prevSelected);
+                if (position == timeControlsList.size() /* == "Custom" */) {
+                    ClockPairTemplate prevSelected = theClock.getClocks();
+                    theCustomItem.bindFrom(prevSelected);
                     showConfigureClockDialog(false);
                 } else {
-                    theClock.setClocks(nowSelected);
+                    theClock.setClocks(timeControlsList.get(position));
                 }
             }
 
@@ -90,8 +87,7 @@ public class ChessClockActivity extends AppCompatActivity {
             Intent data = result.getData();
             assert data != null;
             ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
-            changes.applyTo(timeControlsList.subList(0, timeControlsList.size() - 1)); // FIXME: better array adapter here
-            timeControlSelection.notifyDataSetChanged();
+            changes.applyTo(timeControlsList); // FIXME: trigger notifyDataSetChanged() once
         });
     }
 
@@ -113,8 +109,7 @@ public class ChessClockActivity extends AppCompatActivity {
         item.setOnMenuItemClickListener(menuItem -> {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
-                    // [0; "Custom"[
-                    timeControlsList.subList(0, timeControlsList.size() - 1).toArray(ClockPairTemplate.EMPTY_ARRAY));
+                    SimpleMutableList.toArray(timeControlsList, ClockPairTemplate.EMPTY_ARRAY));
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeModePicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
@@ -141,13 +136,12 @@ public class ChessClockActivity extends AppCompatActivity {
 
             if (howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW) {
                 // Insert before special "Custom" item
-                timeControlSelection.insert(newClockPairTemplate, timeControlSelection.getCount() - 1);
+                timeControlsList.add(newClockPairTemplate);
                 // This will indirectly trigger setClocks
                 timeModePicker.setSelection(timeModePicker.getCount() - 2);
             } else {
                 // FIXME: only if something ackshually changed
                 // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
-                ClockPairTemplate theCustomItem = timeControlSelection.getItem(timeControlSelection.getCount() - 1);
                 theCustomItem.bindFrom(newClockPairTemplate);
                 timeModePicker.setSelection(timeModePicker.getCount() - 1);
                 theClock.setClocks(theCustomItem);

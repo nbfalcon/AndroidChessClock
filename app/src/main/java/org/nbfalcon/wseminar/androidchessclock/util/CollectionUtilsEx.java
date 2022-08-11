@@ -10,6 +10,7 @@ public class CollectionUtilsEx {
     }
 
     public static <E> void move(List<E> list, int from, int to) {
+        // FIXME: optimize dis
         if (from < to) {
             for (int i = from; i < to; i++) {
                 E tmp = list.get(i);
@@ -30,5 +31,14 @@ public class CollectionUtilsEx {
         R[] result = Arrays.copyOf(empty, source.length);
         System.arraycopy(source, 0, result, 0, source.length);
         return result;
+    }
+
+    public static String join(String[] joinUs, String with) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < joinUs.length; i++) {
+            if (i != 0) result.append(with);
+            result.append(joinUs[i]);
+        }
+        return result.toString();
     }
 }

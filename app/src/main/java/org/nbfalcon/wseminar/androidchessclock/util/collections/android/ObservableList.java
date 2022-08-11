@@ -1,6 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.util.collections.android;
 
 import android.annotation.SuppressLint;
+import android.database.DataSetObserver;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
@@ -55,6 +56,15 @@ public class ObservableList<E> implements SimpleMutableList<E> {
                     adapter.notifyItemRangeRemoved(fromPosition, itemCount);
                     adapter.notifyItemRangeInserted(toPosition < fromPosition ? toPosition : toPosition - itemCount, itemCount);
                 }
+            }
+        };
+    }
+
+    public static RecyclerView.AdapterDataObserver asAdapterDataObserver(DataSetObserver observer) {
+        return new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                observer.onChanged();
             }
         };
     }
