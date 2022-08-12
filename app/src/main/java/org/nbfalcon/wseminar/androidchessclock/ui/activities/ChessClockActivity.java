@@ -1,6 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,6 +44,9 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private StorageDBHelper dbHelper;
 
+    private static final String PREF_LAST_TIME_CONTROL_SELECTED = "last_time_control";
+    private SharedPreferences myActivityPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +74,8 @@ public class ChessClockActivity extends AppCompatActivity {
         theCustomItem = new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
         timeControlsList.setBonusItem(theCustomItem);
 
+        myActivityPreferences = getPreferences(MODE_PRIVATE);
+
         timeModePicker = findViewById(R.id.timeModePicker);
         timeModePicker.setAdapter(timeControlsList);
         timeModePicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -83,6 +89,8 @@ public class ChessClockActivity extends AppCompatActivity {
                     showConfigureClockDialog(false);
                 } else {
                     theClock.setClocks(timeControlsList.getBackingList().get(position));
+                    // FIXME: We somehow need to store the custom item
+                    myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                 }
             }
 
@@ -98,14 +106,15 @@ public class ChessClockActivity extends AppCompatActivity {
             changes.applyTo(timeControlsList.getBackingList());
             timeControlsList.notifyDataSetChanged();
         });
-    }
 
-    @Override
-    public void onRestoreInstanceState(@androidx.annotation.Nullable Bundle savedInstanceState, @androidx.annotation.Nullable PersistableBundle persistentState) {
-        super.onRestoreInstanceState(savedInstanceState, persistentState);
-
-        if (persistentState != null) {
-            timeModePicker.setSelection(persistentState.getInt("selectedTimeControl"));
+        if (savedInstanceState != null) {
+            timeModePicker.setSelection(savedInstanceState.getInt("selectedTimeControl"));
+        }
+        else {
+            int last = myActivityPreferences.getInt(PREF_LAST_TIME_CONTROL_SELECTED, 0);
+            if (timeModePicker.getSelectedItemPosition() != last) {
+                timeModePicker.setSelection(last);
+            }
         }
     }
 
@@ -184,11 +193,10 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putParcelable("theClock", theClock);
-        // Don't persist the clock across restarts; if the user closes the app, chances are they won't care about the last game
-        outPersistentState.putInt("selectedTimeControl", timeModePicker.getSelectedItemPosition());
+        outState.putInt("selectedTimeControl", timeModePicker.getSelectedItemPosition());
     }
 
     private class ChessClockUiViewImpl implements ChessClock.ChessClockView {

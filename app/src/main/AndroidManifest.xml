@@ -13,8 +13,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.activities.ChessClockActivity"
-            android:exported="true"
-            android:persistableMode="persistAcrossReboots">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
