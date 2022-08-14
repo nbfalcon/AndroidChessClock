@@ -30,10 +30,10 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         this.changeList = new ChangeList<>(new ArrayList<>(), parcelClass);
     }
 
+    @SuppressWarnings("unchecked")
     protected ChangeCollectorList(Parcel in) {
         changeList = in.readParcelable(this.getClass().getClassLoader());
         try {
-            //noinspection unchecked
             items = in.createTypedArrayList((Parcelable.Creator<E>)changeList.parcelClass.getField("CREATOR").get(null));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);

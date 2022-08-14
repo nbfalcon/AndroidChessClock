@@ -29,7 +29,6 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
     private State currentState = State.INIT;
     private ClockPairTemplate clocksTemplate;
     private ClockPair clocks;
-
     public ChessClock() {
     }
 
@@ -44,11 +43,15 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         return Math.min(-1, clock.getTimeLeft());
     }
 
-    public void setTimer(Timer timer) {
+    public void injectTimer(Timer timer) {
         this.timer = timer;
     }
 
-    public void setView(ChessClockView view) {
+    public void startTimerDelayed() {
+        timer.onStartTimer(this, getTimeHint(getClockOfCurrentPlayer()));
+    }
+
+    public void injectView(ChessClockView view) {
         this.view = view;
     }
 
@@ -88,6 +91,10 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         setState(State.PAUSED);
     }
 
+    public void onFreeze() {
+        timer.onStopTimer();
+    }
+
     public void onReset() {
         assert currentState == State.PAUSED || currentState == State.GAME_OVER;
         clocks = clocksTemplate.create();
@@ -105,6 +112,11 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
                 timer.onKillTimer();
             }
         }
+    }
+
+    public void updateClocks() {
+        view.onUpdateTime(false, Math.max(0, clocks.getClockFor(false).getTimeLeft()));
+        view.onUpdateTime(true, Math.max(0, clocks.getClockFor(true).getTimeLeft()));
     }
 
     private TimeControl getClockOfCurrentPlayer() {
@@ -130,7 +142,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
     }
 
     public void setClocks(ClockPairTemplate clocks) {
-        assert currentState == State.INIT;
+//        assert currentState == State.INIT;
         clocksTemplate = clocks;
         this.clocks = clocksTemplate.create();
         resetViewTimers();
@@ -146,7 +158,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         ParcelCompatEx.writeBoolean(dest, currentPlayer);
         dest.writeInt(currentState.ordinal());
         dest.writeParcelable(clocksTemplate, flags);
-        dest.writeParcelable((Parcelable) clocks, flags);
+        dest.writeParcelable(clocks, flags);
     }
 
     public enum State {
