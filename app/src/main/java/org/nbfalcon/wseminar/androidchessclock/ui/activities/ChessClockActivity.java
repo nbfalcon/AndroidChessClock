@@ -175,8 +175,8 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         if (theClock.getState() == ChessClock.State.TICKING) {
             // NOTE: we freeze the clock even during rotation, so *technically* while rotating the clock doesn't tick;
             //  this isn't an advantage for the player though, since they can't see the clock properly while the phone
@@ -317,8 +317,9 @@ public class ChessClockActivity extends AppCompatActivity {
                 // FIXME: tabs that were modified should have a cute little '*' after their title like in Visual Studio
                 if (theClockModel.getState() == ChessClock.State.INIT) {
                     showConfigureClockDialog(player);
+                    return true;
                 }
-                return true;
+                return false;
             }
         }
     }
