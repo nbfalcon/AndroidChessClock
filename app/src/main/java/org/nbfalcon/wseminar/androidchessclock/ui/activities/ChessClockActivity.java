@@ -29,7 +29,7 @@ import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
-import org.nbfalcon.wseminar.androidchessclock.util.android.SimpleMutableListAdapter;
+import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.NoListenerSelection;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;

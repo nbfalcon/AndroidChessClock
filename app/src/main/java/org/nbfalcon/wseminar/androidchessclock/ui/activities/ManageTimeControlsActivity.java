@@ -20,12 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
+import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListRecyclerAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
-import org.nbfalcon.wseminar.androidchessclock.util.collections.android.ObservableList;
 
 import java.util.Arrays;
 
@@ -33,11 +32,10 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     public static final String KEY_CUSTOM_TIME_CONTROLS = "org.nbfalcon.wseminar.AndroidChessClock.customTimeControls";
     public static final String KEY_NEW_TIME_CONTROL_PRESET = "org.nbfalcon.wseminar.AndroidChessClock.newTimeControlPreset";
     public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
+    private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
     private ChangeCollectorList<ClockPairTemplate> changesResult;
     private ClockPairTemplate newTimeControlPreset;
     private TimeControlsAdapter tcAdapter;
-
-    private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +53,9 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
             newTimeControlPreset = extras.getParcelable(KEY_NEW_TIME_CONTROL_PRESET);
         }
-        ObservableList<ClockPairTemplate> observableList = new ObservableList<>(changesResult);
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        tcAdapter = new TimeControlsAdapter(observableList, changesResult);
+        tcAdapter = new TimeControlsAdapter(changesResult);
         timeControls.setAdapter(tcAdapter);
         new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
@@ -73,7 +70,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 int from = viewHolder.getAdapterPosition();
                 int to = target.getAdapterPosition();
                 if (from != -1 && to != -1) {
-                    observableList.move(from, to);
+                    tcAdapter.move(from, to);
                     return true;
                 }
                 // This case no longer seems to happen
@@ -89,8 +86,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         addNewTimeControl.setOnClickListener((view) -> {
             myTimeControlCustomizer.bind(false, newTimeControlPreset, (result) -> {
                 ClockPairTemplate newClockPairTemplate = myTimeControlCustomizer.getClockPairTemplate();
-                observableList.add(newClockPairTemplate);
-                tcAdapter.onAdd();
+                tcAdapter.add(newClockPairTemplate);
             });
             myTimeControlCustomizer.setSettingWantSaveAs(false);
             myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
@@ -147,17 +143,11 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         outState.putParcelable("newTimeControlPreset", newTimeControlPreset);
     }
 
-    private class TimeControlsAdapter extends RecyclerView.Adapter<TimeControlsAdapter.ViewHolder> {
-
-        private final ObservableList<ClockPairTemplate> backingList;
-        private final SimpleMutableList<ClockPairTemplate> backingList2;
+    private class TimeControlsAdapter extends SimpleMutableListRecyclerAdapter<ClockPairTemplate, TimeControlsAdapter.ViewHolder> {
         private RecyclerView attachedTo = null;
 
-        private TimeControlsAdapter(ObservableList<ClockPairTemplate> backingList, SimpleMutableList<ClockPairTemplate> backingList2) {
-            this.backingList = backingList;
-            backingList.registerAdapterDataObserver(ObservableList.observerFromAdapter(this));
-
-            this.backingList2 = backingList2;
+        private TimeControlsAdapter(SimpleMutableList<ClockPairTemplate> backingList) {
+            super(backingList);
         }
 
         @NonNull
@@ -171,18 +161,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull @NotNull ManageTimeControlsActivity.TimeControlsAdapter.ViewHolder holder, int position) {
             holder.currentlyBinding = true;
-            ClockPairTemplate item = backingList.get(position);
+            ClockPairTemplate item = get(position);
             holder.label.setText(item.toString());
             holder.currentlyBinding = false;
 
             if (getItemCount() == 1) {
                 holder.deleteRow.setEnabled(false);
             }
-        }
-
-        @Override
-        public int getItemCount() {
-            return backingList.size();
         }
 
         @Override
@@ -200,7 +185,9 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
             }
         }
 
-        public void onAdd() {
+        @Override
+        public void add(ClockPairTemplate item) {
+            super.add(item);
             if (getItemCount() == 2) {
                 ViewHolder prevSingle = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
                 assert prevSingle != null;
@@ -230,24 +217,23 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                     public void afterTextChanged(Editable s) {
                         if (!currentlyBinding) {
                             int myIndex = getAdapterPosition();
-                            ClockPairTemplate thisItem = backingList2.get(myIndex);
+                            ClockPairTemplate thisItem = get(myIndex);
                             thisItem.setName(s.toString());
                             // FIXME: proper SQL?
-                            backingList2.set(myIndex, thisItem);
+                            set(myIndex, thisItem);
                         }
                     }
                 });
 
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
-                    myTimeControlCustomizer.bind(false, backingList2.get(getAdapterPosition()), (result) -> {
+                    myTimeControlCustomizer.bind(false, get(getAdapterPosition()), (result) -> {
                         ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
                         if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
-                            backingList.add(newClockPairTemplate);
-                            onAdd();
+                            add(newClockPairTemplate);
                         } else {
-                            backingList.set(getAdapterPosition(), newClockPairTemplate);
+                            set(getAdapterPosition(), newClockPairTemplate);
                         }
                     });
                     myTimeControlCustomizer.setSettingWantSaveAs(true);
@@ -259,13 +245,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                     if (getItemCount() <= 1) return;
 
                     String message = String.format("Really delete time control '%s' forever?",
-                            backingList.get(getAdapterPosition()));
+                            get(getAdapterPosition()));
                     AlertDialog confirm = new AlertDialog.Builder(itemView.getContext())
                             .setIcon(R.drawable.ic_material_delete_forever)
                             .setTitle("Really delete?")
                             .setMessage(message)
                             .setPositiveButton("Ok", (dialog, which) -> {
-                                backingList.remove(getAdapterPosition());
+                                remove(getAdapterPosition());
                                 handleLastItemLeft();
                             })
                             .setNegativeButton("Cancel", null)

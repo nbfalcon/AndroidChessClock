@@ -1,4 +1,4 @@
-package org.nbfalcon.wseminar.androidchessclock.util.android;
+package org.nbfalcon.wseminar.androidchessclock.util.android.adapter;
 
 import android.content.Context;
 import android.content.res.Resources;
