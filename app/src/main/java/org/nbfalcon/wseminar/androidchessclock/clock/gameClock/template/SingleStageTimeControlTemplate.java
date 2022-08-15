@@ -2,7 +2,6 @@ package org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.*;
 
@@ -19,20 +18,17 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
         }
     };
 
-    public final @NotNull String name;
     public final @NotNull TimeControlStageTemplate.Type type;
     public final long time;
     public final long increment;
 
-    public SingleStageTimeControlTemplate(@NotNull String name, long time, long increment, @NotNull TimeControlStageTemplate.Type type) {
-        this.name = name;
+    public SingleStageTimeControlTemplate(long time, long increment, @NotNull TimeControlStageTemplate.Type type) {
         this.time = time;
         this.increment = increment;
         this.type = type;
     }
 
     protected SingleStageTimeControlTemplate(Parcel in) {
-        this.name = in.readString();
         this.type = TimeControlStageTemplate.Type.values()[in.readInt()];
         this.time = in.readLong();
         this.increment = in.readLong();
@@ -60,13 +56,6 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
         return timeControl;
     }
 
-    @NonNull
-    @NotNull
-    @Override
-    public String toString() {
-        return name;
-    }
-
     @Override
     public int describeContents() {
         return 0;
@@ -74,7 +63,6 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
         dest.writeInt(this.type.ordinal());
         dest.writeLong(this.time);
         dest.writeLong(this.increment);

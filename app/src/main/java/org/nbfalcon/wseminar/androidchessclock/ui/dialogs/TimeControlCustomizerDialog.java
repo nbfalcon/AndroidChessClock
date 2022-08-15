@@ -43,7 +43,7 @@ public class TimeControlCustomizerDialog extends DialogFragment {
 
     @NotNull
     public ClockPairTemplate getClockPairTemplate() {
-        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", getStage1OrBoth().getBaseTimeMS(), getStage1OrBoth().getIncrementMS(), getStage1OrBoth().getIncrementType());
+        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate(getStage1OrBoth().getBaseTimeMS(), getStage1OrBoth().getIncrementMS(), getStage1OrBoth().getIncrementType());
 
         @NotNull String name = getTimeControlName();
         @NotNull String forceName = getResultType() == HowExited.CREATE_NEW ? name : "Custom";
@@ -52,7 +52,7 @@ public class TimeControlCustomizerDialog extends DialogFragment {
         if (shouldSetForBothPlayers()) {
             newClockPairTemplate = new ClockPairTemplate(forceName, p1, null);
         } else {
-            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", getStage2().getBaseTimeMS(), getStage2().getIncrementMS(), getStage2().getIncrementType());
+            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate(getStage2().getBaseTimeMS(), getStage2().getIncrementMS(), getStage2().getIncrementType());
             newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
         }
         return newClockPairTemplate;
@@ -147,7 +147,12 @@ public class TimeControlCustomizerDialog extends DialogFragment {
     @Override
     public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        ((ViewGroup) rootView.getParent()).removeView(rootView);
+
+        // Detach view for reuse; clicking "Ok" will cause the parent to be null, however (probably due to `mViewDestroyed`)
+        ViewGroup parent = (ViewGroup) rootView.getParent();
+        if (parent != null) {
+            parent.removeView(rootView);
+        }
     }
 
     public TimeControlStageCustomizer getStage1OrBoth() {

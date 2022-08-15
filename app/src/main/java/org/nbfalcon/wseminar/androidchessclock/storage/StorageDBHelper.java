@@ -32,15 +32,14 @@ public class StorageDBHelper extends SQLiteOpenHelper {
 
                 long p1TimeMS = cursor.getLong(startColumn + 1), p1IncrMS = cursor.getLong(startColumn + 2);
                 int p1ModeMS = cursor.getInt(startColumn + 3);
-                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME meow", p1TimeMS, p1IncrMS, TimeControlStageTemplate.Type.values()[p1ModeMS]);
+                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate(p1TimeMS, p1IncrMS, TimeControlStageTemplate.Type.values()[p1ModeMS]);
 
                 SingleStageTimeControlTemplate p2 = null;
                 if (!cursor.isNull(startColumn + 6)) {
                     long p2TimeMS = cursor.getLong(startColumn + 4), p2IncrMS = cursor.getLong(startColumn + 5);
                     int p2ModeMS = cursor.getInt(startColumn + 6);
 
-                    p2 = new SingleStageTimeControlTemplate("FIXME meow", p2TimeMS, p2IncrMS,
-                            TimeControlStageTemplate.Type.values()[p2ModeMS]);
+                    p2 = new SingleStageTimeControlTemplate(p2TimeMS, p2IncrMS, TimeControlStageTemplate.Type.values()[p2ModeMS]);
                 }
 
                 return new ClockPairTemplate(name, p1, p2);
