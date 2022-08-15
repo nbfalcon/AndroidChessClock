@@ -52,15 +52,15 @@ public class ChessClockActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chess_clock);
 
+        ChessClock savedClock = null;
+        if (savedInstanceState != null) {
+            savedClock = savedInstanceState.getParcelable("theClock");
+        }
+
+        theClock = savedClock != null ? savedClock : new ChessClock();
         ChessClockUiViewImpl uiView = new ChessClockUiViewImpl(this);
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
-
-        if (savedInstanceState != null) {
-            theClock = savedInstanceState.getParcelable("theClock");
-        } else {
-            theClock = new ChessClock();
-        }
         theClock.injectView(uiView);
         theClock.injectTimer(timer);
         uiView.injectClockModel(theClock);
@@ -78,35 +78,31 @@ public class ChessClockActivity extends AppCompatActivity {
 
         timeControlPicker = new NoListenerSelection<>(findViewById(R.id.timeControlPicker));
         timeControlPicker.setAdapter(timeControlsList);
-        timeControlPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        AdapterView.OnItemSelectedListener timeControlPickerOnSelection = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state",
-                //  a rather ugly HACK; showConfigureDialog will select either "Custom" or the newly created time control
-                if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
-                    ClockPairTemplate prevSelected = theClock.getClocks();
-                    theCustomItem.bindFrom(prevSelected);
-                    showConfigureClockDialog(false);
-                } else {
-                    theClock.setClocks(timeControlsList.getBackingList().get(position));
-                    // FIXME: We somehow need to store the custom item
-                    myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
+                if (theClock.getState() == ChessClock.State.INIT) {
+                    onTimeControlSelected(position);
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
-        });
+        };
+        timeControlPicker.setOnItemSelectedListener(timeControlPickerOnSelection);
 
-        if (savedInstanceState != null) {
+        if (savedClock != null) {
             timeControlPicker.setSelectionNoListener(savedInstanceState.getInt("selectedTimeControl"));
-            // We don't go through theClock.setClocks() -> listeners
             theClock.updateClocks();
             uiView.onTransition(theClock.getState());
+            // We don't go through theClock.setClocks() -> listeners
         } else {
             int last = myActivityPreferences.getInt(PREF_LAST_TIME_CONTROL_SELECTED, 0);
-            timeControlPicker.setSelectionWithListener(last);
+            timeControlPicker.setSelectionNoListener(last);
+            // We must update the UI now, otherwise we'll get crashes when rotating the app on app startup
+            //  (since spinner listeners are called on the ui thread the first time eventually, not *now*)
+            onTimeControlSelected(last);
         }
 
         manageTimeControlsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -116,6 +112,19 @@ public class ChessClockActivity extends AppCompatActivity {
             changes.applyTo(timeControlsList.getBackingList());
             timeControlsList.notifyDataSetChanged();
         });
+    }
+
+    private void onTimeControlSelected(int position) {
+        // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state"
+        if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
+            ClockPairTemplate prevSelected = theClock.getClocks();
+            theCustomItem.bindFrom(prevSelected);
+            showConfigureClockDialog(false);
+        } else {
+            theClock.setClocks(timeControlsList.getBackingList().get(position));
+            // FIXME: We somehow need to store the custom item
+            myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
+        }
     }
 
     @Override

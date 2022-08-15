@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 
 public class NoListenerSelection<Delegate extends AdapterView<DelegateAdapter>, DelegateAdapter extends Adapter> {
     private final Delegate delegate;
-    private boolean onItemSelectedListenerEnabled = true;
+    private int noListenerItem = -1;
 
     public NoListenerSelection(Delegate delegate) {
         this.delegate = delegate;
@@ -17,18 +17,14 @@ public class NoListenerSelection<Delegate extends AdapterView<DelegateAdapter>, 
         this.delegate.setOnItemSelectedListener(delegate == null ? null : new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (onItemSelectedListenerEnabled) {
+                if (position != noListenerItem) {
                     delegate.onItemSelected(parent, view, position, id);
                 }
-                onItemSelectedListenerEnabled = true;
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                if (onItemSelectedListenerEnabled) {
-                    delegate.onNothingSelected(parent);
-                }
-                onItemSelectedListenerEnabled = true;
+                delegate.onNothingSelected(parent);
             }
         });
     }
@@ -38,7 +34,7 @@ public class NoListenerSelection<Delegate extends AdapterView<DelegateAdapter>, 
     }
 
     public void setSelectionNoListener(int position) {
-        onItemSelectedListenerEnabled = false;
+        noListenerItem = position;
         delegate.setSelection(position);
     }
 
