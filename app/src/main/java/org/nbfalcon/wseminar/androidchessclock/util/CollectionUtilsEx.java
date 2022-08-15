@@ -1,6 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,20 +11,34 @@ public class CollectionUtilsEx {
     }
 
     public static <E> void move(List<E> list, int from, int to) {
-        // FIXME: optimize dis
+        E moveMe = list.get(from);
         if (from < to) {
-            for (int i = from; i < to; i++) {
-                E tmp = list.get(i);
-                list.set(i, list.get(i + 1));
-                list.set(i + 1, tmp);
+            for (int i = from + 1; i < to; i++) {
+                list.set(i - 1, list.get(i));
             }
         } else if (to < from) {
-            for (int i = from; i > to; i--) {
-                E tmp = list.get(i);
-                list.set(i, list.get(i - 1));
-                list.set(i - 1, tmp);
+            for (int i = from - 1; i > to; i--) {
+                list.set(i + 1, list.get(i));
             }
         }
+        list.set(to, moveMe);
+    }
+
+    /**
+     * @apiNote Always use SimpleMutableList.move()! This is just to keep the implementations of move local to each other.
+     */
+    public static <E> void move(SimpleMutableList<E> list, int from, int to) {
+        E moveMe = list.get(from);
+        if (from < to) {
+            for (int i = from + 1; i < to; i++) {
+                list.set(i - 1, list.get(i));
+            }
+        } else if (to < from) {
+            for (int i = from - 1; i > to; i--) {
+                list.set(i + 1, list.get(i));
+            }
+        }
+        list.set(to, moveMe);
     }
 
     @SuppressWarnings("SuspiciousSystemArraycopy")
