@@ -12,17 +12,18 @@
         android:layout_height="0dp"
         android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/startButton"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
         android:id="@+id/timeControlPicker"
-        android:layout_width="160dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:spinnerMode="dropdown"
         app:layout_constraintBottom_toBottomOf="@id/startButton"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/startButton"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/startButton" />
 
     <org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton
@@ -30,7 +31,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/player2Clock"
-        app:layout_constraintLeft_toRightOf="@id/timeControlPicker"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/player1Clock" />
 
     <org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView
@@ -40,7 +42,7 @@
         android:gravity="center"
         android:rotation="180"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="@id/player1Clock"
-        app:layout_constraintRight_toRightOf="@id/player1Clock"
+        app:layout_constraintStart_toStartOf="@id/player1Clock"
+        app:layout_constraintEnd_toEndOf="@id/player1Clock"
         app:layout_constraintTop_toBottomOf="@id/startButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

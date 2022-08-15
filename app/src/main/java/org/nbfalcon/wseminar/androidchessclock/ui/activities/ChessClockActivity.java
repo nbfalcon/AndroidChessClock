@@ -178,6 +178,9 @@ public class ChessClockActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if (theClock.getState() == ChessClock.State.TICKING) {
+            // NOTE: we freeze the clock even during rotation, so *technically* while rotating the clock doesn't tick;
+            //  this isn't an advantage for the player though, since they can't see the clock properly while the phone
+            //  is rotating for a few milliseconds
             theClock.onFreeze();
         }
     }
