@@ -1,7 +1,6 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.views;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -30,22 +29,29 @@ public class StartButton extends AppCompatImageButton {
 
     public void setState(@NotNull State newState) {
         @DrawableRes int whichIconRes = -1;
+        String contentDescription;
         switch (newState) {
             case INIT:
                 whichIconRes = R.drawable.ic_material_not_started;
+                contentDescription = "Start the Clock";
                 break;
             case START:
                 whichIconRes = R.drawable.ic_material_play;
+                contentDescription = "Continue";
                 break;
             case STOP:
                 whichIconRes = R.drawable.ic_material_pause;
+                contentDescription = "Stop";
                 break;
             case RESTART:
                 whichIconRes = R.drawable.ic_material_restart_alt;
+                contentDescription = "Restart Game";
                 break;
+            default:
+                throw new AssertionError("Invalid state?! " + newState);
         }
-        Drawable actualIcon = AppCompatResources.getDrawable(getContext(), whichIconRes);
-        setImageDrawable(actualIcon);
+        setImageDrawable(AppCompatResources.getDrawable(getContext(), whichIconRes));
+        setContentDescription(contentDescription);
     }
 
     public enum State {
