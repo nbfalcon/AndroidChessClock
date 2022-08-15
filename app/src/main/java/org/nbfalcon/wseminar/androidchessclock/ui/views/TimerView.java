@@ -3,6 +3,7 @@ package org.nbfalcon.wseminar.androidchessclock.ui.views;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.widget.TextViewCompat;
@@ -10,6 +11,7 @@ import androidx.core.widget.TextViewCompat;
 public class TimerView extends AppCompatTextView {
     {
         TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, 12, 100, 1, TypedValue.COMPLEX_UNIT_SP);
+        setGravity(Gravity.CENTER);
     }
 
     public TimerView(Context context) {
