@@ -29,6 +29,7 @@ import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
+import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.NoListenerSelection;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
@@ -38,6 +39,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private static final String PREF_LAST_TIME_CONTROL_SELECTED = "last_time_control";
     private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
+    private final DialogOnce onlyOneDialog = new DialogOnce();
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
     private SimpleMutableListAdapter<ClockPairTemplate> timeControlsList;
@@ -155,23 +157,25 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {
-        myTimeControlCustomizer.bind(whichPlayer, theClock.getClocks(), (result) -> {
-            ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
+        if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
+            myTimeControlCustomizer.bind(whichPlayer, theClock.getClocks(), (result) -> {
+                ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
-            if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
-                // Insert before special "Custom" item
-                timeControlsList.add(newClockPairTemplate);
-                // This will indirectly trigger setClocks
-                timeControlPicker.setSelectionWithListener(timeControlPicker.getCount() - 2);
-            } else {
-                // FIXME: only if something ackshually changed
-                // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
-                theCustomItem.bindFrom(newClockPairTemplate);
-                timeControlPicker.setSelectionNoListener(timeControlPicker.getCount() - 1);
-                theClock.setClocks(theCustomItem);
-            }
-        });
-        myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+                if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
+                    // Insert before special "Custom" item
+                    timeControlsList.add(newClockPairTemplate);
+                    // This will indirectly trigger setClocks
+                    timeControlPicker.setSelectionWithListener(timeControlPicker.getCount() - 2);
+                } else {
+                    // FIXME: only if something ackshually changed
+                    // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
+                    theCustomItem.bindFrom(newClockPairTemplate);
+                    timeControlPicker.setSelectionNoListener(timeControlPicker.getCount() - 1);
+                    theClock.setClocks(theCustomItem);
+                }
+            });
+            myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+        }
     }
 
     @Override

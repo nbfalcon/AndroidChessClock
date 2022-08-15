@@ -22,11 +22,12 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomizer;
+import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.ViewFlipperUtils;
 
 // FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
-public class TimeControlCustomizerDialog extends DialogFragment {
+public class TimeControlCustomizerDialog extends DialogFragment implements DialogOnce.DialogWithOnDismiss {
     private OnTimeSet onResult = null;
     private boolean forPlayer;
 
@@ -40,6 +41,7 @@ public class TimeControlCustomizerDialog extends DialogFragment {
     private boolean customTimeControlSaveAsClicked;
 
     private boolean settingWantSaveAs = true;
+    private @Nullable DialogInterface.OnDismissListener onDismiss;
 
     @NotNull
     public ClockPairTemplate getClockPairTemplate() {
@@ -153,6 +155,11 @@ public class TimeControlCustomizerDialog extends DialogFragment {
         if (parent != null) {
             parent.removeView(rootView);
         }
+
+        if (onDismiss != null) {
+            onDismiss.onDismiss(dialog);
+            onDismiss = null;
+        }
     }
 
     public TimeControlStageCustomizer getStage1OrBoth() {
@@ -182,6 +189,11 @@ public class TimeControlCustomizerDialog extends DialogFragment {
 
     public HowExited getResultType() {
         return customTimeControlSaveAsClicked ? HowExited.CREATE_NEW : HowExited.OK;
+    }
+
+    @Override
+    public void registerOnDismissListenerOnce(DialogInterface.OnDismissListener onDismiss) {
+        this.onDismiss = onDismiss;
     }
 
     public enum HowExited {

@@ -22,6 +22,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeContro
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
+import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListRecyclerAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
@@ -33,6 +34,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     public static final String KEY_NEW_TIME_CONTROL_PRESET = "org.nbfalcon.wseminar.AndroidChessClock.newTimeControlPreset";
     public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
     private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
+    private final DialogOnce onlyOneDialog = new DialogOnce();
     private ChangeCollectorList<ClockPairTemplate> changesResult;
     private ClockPairTemplate newTimeControlPreset;
     private TimeControlsAdapter tcAdapter;
@@ -84,12 +86,14 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
         addNewTimeControl.setOnClickListener((view) -> {
-            myTimeControlCustomizer.bind(false, newTimeControlPreset, (result) -> {
-                ClockPairTemplate newClockPairTemplate = myTimeControlCustomizer.getClockPairTemplate();
-                tcAdapter.add(newClockPairTemplate);
-            });
-            myTimeControlCustomizer.setSettingWantSaveAs(false);
-            myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+            if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
+                myTimeControlCustomizer.bind(false, newTimeControlPreset, (result) -> {
+                    ClockPairTemplate newClockPairTemplate = myTimeControlCustomizer.getClockPairTemplate();
+                    tcAdapter.add(newClockPairTemplate);
+                });
+                myTimeControlCustomizer.setSettingWantSaveAs(false);
+                myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+             }
         });
     }
 
@@ -110,22 +114,26 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.activity_manage_time_controls_threedot, menu);
 
         menu.findItem(R.id.menuResetTimeControls).setOnMenuItemClickListener(item -> {
-            @SuppressLint("NotifyDataSetChanged") AlertDialog confirm = new AlertDialog.Builder(this)
-                    .setIcon(R.drawable.ic_material_reset_device)
-                    .setTitle("Reset Time Controls")
-                    .setMessage("Really reset all time controls to default?\nYour custom time controls will be deleted.")
-                    .setPositiveButton("Ok", (dialog, which) -> {
-                        changesResult.clear();
-                        for (ClockPairTemplate template : BuiltinTimeControls.BUILTIN) {
-                            changesResult.add(template);
-                        }
-                        // Well, the entire dataset /has/ changed
-                        tcAdapter.notifyDataSetChanged();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .create();
-            confirm.show();
-            return true;
+            AlertDialog.Builder confirmBuilder = onlyOneDialog.withBuilder(this);
+            if (confirmBuilder != null) {
+                @SuppressLint("NotifyDataSetChanged") AlertDialog confirm = confirmBuilder
+                        .setIcon(R.drawable.ic_material_reset_device)
+                        .setTitle("Reset Time Controls")
+                        .setMessage("Really reset all time controls to default?\nYour custom time controls will be deleted.")
+                        .setPositiveButton("Ok", (dialog, which) -> {
+                            changesResult.clear();
+                            for (ClockPairTemplate template : BuiltinTimeControls.BUILTIN) {
+                                changesResult.add(template);
+                            }
+                            // Well, the entire dataset /has/ changed
+                            tcAdapter.notifyDataSetChanged();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                confirm.show();
+                return true;
+            }
+            return false;
         });
 
         return true;
@@ -227,36 +235,41 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
-                    myTimeControlCustomizer.bind(false, get(getAdapterPosition()), (result) -> {
-                        ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
+                    if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
+                        myTimeControlCustomizer.bind(false, get(getAdapterPosition()), (result) -> {
+                            ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
-                        if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
-                            add(newClockPairTemplate);
-                        } else {
-                            set(getAdapterPosition(), newClockPairTemplate);
-                        }
-                    });
-                    myTimeControlCustomizer.setSettingWantSaveAs(true);
-                    myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+                            if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
+                                add(newClockPairTemplate);
+                            } else {
+                                set(getAdapterPosition(), newClockPairTemplate);
+                            }
+                        });
+                        myTimeControlCustomizer.setSettingWantSaveAs(true);
+                        myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+                    }
                 });
                 this.deleteRow = itemView.findViewById(R.id.deleteRow);
                 deleteRow.setOnClickListener((view) -> {
                     // Don't delete the last item; that's illegal
                     if (getItemCount() <= 1) return;
 
-                    String message = String.format("Really delete time control '%s' forever?",
-                            get(getAdapterPosition()));
-                    AlertDialog confirm = new AlertDialog.Builder(itemView.getContext())
-                            .setIcon(R.drawable.ic_material_delete_forever)
-                            .setTitle("Really delete?")
-                            .setMessage(message)
-                            .setPositiveButton("Ok", (dialog, which) -> {
-                                remove(getAdapterPosition());
-                                handleLastItemLeft();
-                            })
-                            .setNegativeButton("Cancel", null)
-                            .create();
-                    confirm.show();
+                    AlertDialog.Builder confirmBuilder = onlyOneDialog.withBuilder(itemView.getContext());
+                    if (confirmBuilder != null) {
+                        String message = String.format("Really delete time control '%s' forever?",
+                                get(getAdapterPosition()));
+                        AlertDialog confirm = confirmBuilder
+                                .setIcon(R.drawable.ic_material_delete_forever)
+                                .setTitle("Really delete?")
+                                .setMessage(message)
+                                .setPositiveButton("Ok", (dialog, which) -> {
+                                    remove(getAdapterPosition());
+                                    handleLastItemLeft();
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .create();
+                        confirm.show();
+                    }
                 });
             }
         }
