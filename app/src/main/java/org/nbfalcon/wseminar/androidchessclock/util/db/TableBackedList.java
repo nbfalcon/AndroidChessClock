@@ -34,8 +34,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     private void load() {
         assert ids.isEmpty() && items.isEmpty();
 
-        // FIXME: columns.length == 0?
-        String selectPart = "id, " + CollectionUtilsEx.join(columns, ", ");
+        String selectPart = "id" + CollectionUtilsEx.joinPrefix(columns, ", ");
         try (Cursor rowIter = db.rawQuery("SELECT " + selectPart + " FROM " + table, new String[]{})) {
             while (rowIter.moveToNext()) {
                 ids.add(rowIter.getInt(0));

@@ -48,11 +48,11 @@ public class CollectionUtilsEx {
         return result;
     }
 
-    public static String join(String[] joinUs, String with) {
+    public static String joinPrefix(String[] joinUs, String with) {
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < joinUs.length; i++) {
-            if (i != 0) result.append(with);
-            result.append(joinUs[i]);
+        for (String el : joinUs) {
+            result.append(with);
+            result.append(el);
         }
         return result.toString();
     }
