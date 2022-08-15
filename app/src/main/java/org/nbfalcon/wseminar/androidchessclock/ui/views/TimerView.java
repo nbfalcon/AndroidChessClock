@@ -27,19 +27,15 @@ public class TimerView extends AppCompatTextView {
     }
 
     private static String formatTime(long seconds) {
-        // FIXME: there is something wrong with this (do we even care about days?).
-        //  However, the results displayed are correct. Also, what about I18n?
-
+        // NOTE: no i18n; FIDE sadly does not say anything about required Arabic numerals though :(
         long minutes = seconds / 60;
         long hours = minutes / 60;
-        long days = hours / 24;
         seconds %= 60;
         minutes %= 60;
         hours %= 24;
 
         String timeString = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
         if (hours > 0) timeString = hours + ":" + timeString;
-        if (days > 0) timeString = days + "d " + timeString;
 
         return timeString;
     }

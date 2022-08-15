@@ -52,7 +52,7 @@ public class TimeControlStageCustomizer extends ConstraintLayout {
     }
 
     public void bindFrom(SingleStageTimeControlTemplate timeControl) {
-        // FIXME: this is kinda hacky, since we're losing precision; however, since there is no other way to input time...
+        // NOTE: we're losing precision; however, since there is no other way to input time
         baseTime.setTimeSeconds(timeControl.time / 1000);
         increment.setValue((int) (timeControl.increment / 1000));
         incrementType.setSelection(timeControl.type.ordinal());
