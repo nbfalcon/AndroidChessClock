@@ -5,16 +5,6 @@ import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 import java.util.Arrays;
 
 public interface SimpleMutableList<E> {
-    // FIXME: probably optmize this
-    static <E> E[] toArray(SimpleMutableList<E> src, E[] empty) {
-        int length = src.size();
-        E[] result = Arrays.copyOf(empty, length);
-        for (int i = 0; i < length; i++) {
-            result[i] = src.get(i);
-        }
-        return result;
-    }
-
     void add(E item);
 
     void add(int index, E item);
@@ -35,5 +25,14 @@ public interface SimpleMutableList<E> {
 
     default void move(int from, int to) {
         CollectionUtilsEx.move(this, from, to);
+    }
+
+    default E[] toArray(E[] a) {
+        int length = size();
+        E[] result = Arrays.copyOf(a, length);
+        for (int i = 0; i < length; i++) {
+            result[i] = get(i);
+        }
+        return result;
     }
 }

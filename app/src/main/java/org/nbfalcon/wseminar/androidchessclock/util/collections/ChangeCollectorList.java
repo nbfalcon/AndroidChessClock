@@ -34,7 +34,7 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
     protected ChangeCollectorList(Parcel in) {
         changeList = in.readParcelable(this.getClass().getClassLoader());
         try {
-            items = in.createTypedArrayList((Parcelable.Creator<E>)changeList.parcelClass.getField("CREATOR").get(null));
+            items = in.createTypedArrayList((Parcelable.Creator<E>) changeList.parcelClass.getField("CREATOR").get(null));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
@@ -109,6 +109,11 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         } else {
             changeList.changes.add(new MoveChange<>(from, to));
         }
+    }
+
+    @Override
+    public E[] toArray(E[] a) {
+        return items.toArray(a);
     }
 
     private interface Change<E> {

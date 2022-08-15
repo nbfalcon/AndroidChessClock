@@ -182,4 +182,9 @@ public class ObservableList<E> implements SimpleMutableList<E> {
 
         fire(observer -> observer.onItemRangeMoved(from, to, 1));
     }
+
+    @Override
+    public E[] toArray(E[] a) {
+        return backingList.toArray(a);
+    }
 }

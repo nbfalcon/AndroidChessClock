@@ -136,7 +136,7 @@ public class ChessClockActivity extends AppCompatActivity {
         item.setOnMenuItemClickListener(menuItem -> {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
-                    SimpleMutableList.toArray(timeControlsList.getBackingList(), ClockPairTemplate.EMPTY_ARRAY));
+                    timeControlsList.getBackingList().toArray(ClockPairTemplate.EMPTY_ARRAY));
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeControlPicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;

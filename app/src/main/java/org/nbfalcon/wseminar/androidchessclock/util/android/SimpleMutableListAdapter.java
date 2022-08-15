@@ -98,7 +98,8 @@ public class SimpleMutableListAdapter<E> extends BaseAdapter implements ThemedSp
         myThemedSpinnerAdapterHelper.setDropDownViewTheme(theme);
     }
 
-    @Override   public void add(E item) {
+    @Override
+    public void add(E item) {
         backingList.add(item);
         notifyDataSetChanged();
     }
@@ -146,6 +147,11 @@ public class SimpleMutableListAdapter<E> extends BaseAdapter implements ThemedSp
     public void move(int from, int to) {
         backingList.move(from, to);
         notifyDataSetChanged();
+    }
+
+    @Override
+    public E[] toArray(E[] a) {
+        return backingList.toArray(a);
     }
 
     public SimpleMutableList<E> getBackingList() {

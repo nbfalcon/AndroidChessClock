@@ -120,4 +120,9 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public void move(int from, int to) {
         SimpleMutableList.super.move(from, to);
     }
+
+    @Override
+    public E[] toArray(E[] a) {
+        return items.toArray(a);
+    }
 }
