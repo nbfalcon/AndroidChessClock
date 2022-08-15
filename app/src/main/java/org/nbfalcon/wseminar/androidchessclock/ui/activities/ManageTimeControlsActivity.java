@@ -236,12 +236,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
                     if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
-                        myTimeControlCustomizer.bind(false, get(getAdapterPosition()), (result) -> {
+                        ClockPairTemplate prev = get(getAdapterPosition());
+                        myTimeControlCustomizer.bind(false, prev, (result) -> {
                             ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
                             if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                                 add(newClockPairTemplate);
-                            } else {
+                            } else if (!prev.equals(newClockPairTemplate)) {
                                 set(getAdapterPosition(), newClockPairTemplate);
                             }
                         });

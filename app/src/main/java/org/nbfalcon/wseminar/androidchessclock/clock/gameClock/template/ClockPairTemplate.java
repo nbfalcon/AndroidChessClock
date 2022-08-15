@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.util.android.compat.ParcelCompatEx;
 
+import java.util.Objects;
+
 public class ClockPairTemplate implements Parcelable {
     public static final Creator<ClockPairTemplate> CREATOR = new Creator<ClockPairTemplate>() {
         @Override
@@ -25,6 +27,7 @@ public class ClockPairTemplate implements Parcelable {
     private @NotNull String name;
     private PlayerClockTemplate player1;
     private @Nullable PlayerClockTemplate player2;
+
     public ClockPairTemplate(@NotNull String name, @NotNull PlayerClockTemplate player1, @Nullable PlayerClockTemplate player2) {
         this.name = name;
         this.player1 = player1;
@@ -87,5 +90,21 @@ public class ClockPairTemplate implements Parcelable {
             ParcelCompatEx.writeParcelableCreator(dest, p2);
             p2.writeToParcel(dest, flags);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ClockPairTemplate that = (ClockPairTemplate) o;
+
+        if (!name.equals(that.name)) return false;
+        return equalsNoName(that);
+    }
+
+    public boolean equalsNoName(ClockPairTemplate that) {
+        return player1.equals(that.player1)
+                && Objects.equals(player2, that.player2);
     }
 }

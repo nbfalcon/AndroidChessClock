@@ -48,14 +48,12 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
         SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate(getStage1OrBoth().getBaseTimeMS(), getStage1OrBoth().getIncrementMS(), getStage1OrBoth().getIncrementType());
 
         @NotNull String name = getTimeControlName();
-        @NotNull String forceName = getResultType() == HowExited.CREATE_NEW ? name : "Custom";
-
         ClockPairTemplate newClockPairTemplate;
         if (shouldSetForBothPlayers()) {
-            newClockPairTemplate = new ClockPairTemplate(forceName, p1, null);
+            newClockPairTemplate = new ClockPairTemplate(getTimeControlName(), p1, null);
         } else {
             SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate(getStage2().getBaseTimeMS(), getStage2().getIncrementMS(), getStage2().getIncrementType());
-            newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
+            newClockPairTemplate = new ClockPairTemplate(getTimeControlName(), p1, p2);
         }
         return newClockPairTemplate;
     }

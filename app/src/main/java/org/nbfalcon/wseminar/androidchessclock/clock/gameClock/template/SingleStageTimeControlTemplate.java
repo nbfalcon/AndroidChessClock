@@ -67,4 +67,16 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
         dest.writeLong(this.time);
         dest.writeLong(this.increment);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SingleStageTimeControlTemplate that = (SingleStageTimeControlTemplate) o;
+
+        if (time != that.time) return false;
+        if (increment != that.increment) return false;
+        return type == that.type;
+    }
 }

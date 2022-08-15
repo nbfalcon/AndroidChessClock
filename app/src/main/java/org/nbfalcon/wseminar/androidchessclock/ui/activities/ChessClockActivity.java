@@ -158,7 +158,8 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private void showConfigureClockDialog(boolean whichPlayer) {
         if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
-            myTimeControlCustomizer.bind(whichPlayer, theClock.getClocks(), (result) -> {
+            ClockPairTemplate prev = theClock.getClocks();
+            myTimeControlCustomizer.bind(whichPlayer, prev, (result) -> {
                 ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
                 if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
@@ -166,8 +167,9 @@ public class ChessClockActivity extends AppCompatActivity {
                     timeControlsList.add(newClockPairTemplate);
                     // This will indirectly trigger setClocks
                     timeControlPicker.setSelectionWithListener(timeControlPicker.getCount() - 2);
-                } else {
-                    // FIXME: only if something ackshually changed
+                } else if (!prev.equalsNoName(newClockPairTemplate)) {
+                    prev.setName("Custom");
+
                     // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
                     theCustomItem.bindFrom(newClockPairTemplate);
                     timeControlPicker.setSelectionNoListener(timeControlPicker.getCount() - 1);
@@ -318,7 +320,6 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                // FIXME: tabs that were modified should have a cute little '*' after their title like in Visual Studio
                 if (theClockModel.getState() == ChessClock.State.INIT) {
                     showConfigureClockDialog(player);
                     return true;
