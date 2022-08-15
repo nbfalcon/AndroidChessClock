@@ -21,7 +21,6 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
@@ -35,6 +34,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableLis
 public class ChessClockActivity extends AppCompatActivity {
 
     private static final String PREF_LAST_TIME_CONTROL_SELECTED = "last_time_control";
+    private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
     private SimpleMutableListAdapter<ClockPairTemplate> timeControlsList;
@@ -152,22 +152,10 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {
-        TimeControlCustomizerDialog clockDialog = new TimeControlCustomizerDialog(whichPlayer, (dialog) -> {
-            SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
+        myTimeControlCustomizer.bind(whichPlayer, theClock.getClocks(), (result) -> {
+            ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
-            @NotNull String name = dialog.getTimeControlName();
-            TimeControlCustomizerDialog.HowExited howExited = dialog.getResultType();
-            @NotNull String forceName = howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW ? name : "Custom";
-
-            ClockPairTemplate newClockPairTemplate;
-            if (dialog.shouldSetForBothPlayers()) {
-                newClockPairTemplate = new ClockPairTemplate(forceName, p1, null);
-            } else {
-                SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
-                newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
-            }
-
-            if (howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
+            if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                 // Insert before special "Custom" item
                 timeControlsList.add(newClockPairTemplate);
                 // This will indirectly trigger setClocks
@@ -180,8 +168,7 @@ public class ChessClockActivity extends AppCompatActivity {
                 theClock.setClocks(theCustomItem);
             }
         });
-        clockDialog.bindFrom(theClock.getClocks());
-        clockDialog.show(getSupportFragmentManager(), "FIXME meow");
+        myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
     }
 
     @Override

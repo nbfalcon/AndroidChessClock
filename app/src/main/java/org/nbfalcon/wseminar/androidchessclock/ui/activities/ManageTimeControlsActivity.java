@@ -37,6 +37,8 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     private ClockPairTemplate newTimeControlPreset;
     private TimeControlsAdapter tcAdapter;
 
+    private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,25 +87,13 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
         addNewTimeControl.setOnClickListener((view) -> {
-            TimeControlCustomizerDialog clockDialog = new TimeControlCustomizerDialog(false, (dialog) -> {
-                SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
-
-                @NotNull String name = dialog.getTimeControlName();
-
-                ClockPairTemplate newClockPairTemplate;
-                if (dialog.shouldSetForBothPlayers()) {
-                    newClockPairTemplate = new ClockPairTemplate(name, p1, null);
-                } else {
-                    SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
-                    newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
-                }
-
+            myTimeControlCustomizer.bind(false, newTimeControlPreset, (result) -> {
+                ClockPairTemplate newClockPairTemplate = myTimeControlCustomizer.getClockPairTemplate();
                 observableList.add(newClockPairTemplate);
                 tcAdapter.onAdd();
             });
-            clockDialog.setSettingWantSaveAs(false);
-            clockDialog.bindFrom(newTimeControlPreset);
-            clockDialog.show(getSupportFragmentManager(), "FIXME meow");
+            myTimeControlCustomizer.setSettingWantSaveAs(false);
+            myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
         });
     }
 
@@ -250,30 +240,18 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
-                    TimeControlCustomizerDialog customizerDialog = new TimeControlCustomizerDialog(false, dialog -> {
-                        int index = getAdapterPosition();
+                    myTimeControlCustomizer.bind(false, backingList2.get(getAdapterPosition()), (result) -> {
+                        ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
-                        String name = dialog.getTimeControlName();
-                        TimeControlCustomizerDialog.HowExited howExited = dialog.getResultType();
-
-                        SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
-                        ClockPairTemplate newClockPairTemplate;
-                        if (dialog.shouldSetForBothPlayers()) {
-                            newClockPairTemplate = new ClockPairTemplate(name, p1, null);
-                        } else {
-                            SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage2().getBaseTimeMS(), dialog.getStage2().getIncrementMS(), dialog.getStage2().getIncrementType());
-                            newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
-                        }
-
-                        if (howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
+                        if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                             backingList.add(newClockPairTemplate);
                             onAdd();
                         } else {
-                            backingList.set(index, newClockPairTemplate);
+                            backingList.set(getAdapterPosition(), newClockPairTemplate);
                         }
                     });
-                    customizerDialog.bindFrom(backingList.get(getAdapterPosition()));
-                    customizerDialog.show(getSupportFragmentManager(), "FIXME meow");
+                    myTimeControlCustomizer.setSettingWantSaveAs(true);
+                    myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
                 });
                 this.deleteRow = itemView.findViewById(R.id.deleteRow);
                 deleteRow.setOnClickListener((view) -> {
