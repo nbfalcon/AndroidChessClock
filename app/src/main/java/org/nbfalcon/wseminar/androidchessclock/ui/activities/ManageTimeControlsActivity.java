@@ -21,7 +21,7 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
-import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
+import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
@@ -85,7 +85,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
         View addNewTimeControl = findViewById(R.id.addNewTimeControl);
         addNewTimeControl.setOnClickListener((view) -> {
-            PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(false, (dialog) -> {
+            TimeControlCustomizerDialog clockDialog = new TimeControlCustomizerDialog(false, (dialog) -> {
                 SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
 
                 @NotNull String name = dialog.getTimeControlName();
@@ -250,11 +250,11 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
 
                 this.editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
-                    PlayerClockCustomizerDialog customizerDialog = new PlayerClockCustomizerDialog(false, dialog -> {
+                    TimeControlCustomizerDialog customizerDialog = new TimeControlCustomizerDialog(false, dialog -> {
                         int index = getAdapterPosition();
 
                         String name = dialog.getTimeControlName();
-                        PlayerClockCustomizerDialog.HowExited howExited = dialog.getResultType();
+                        TimeControlCustomizerDialog.HowExited howExited = dialog.getResultType();
 
                         SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
                         ClockPairTemplate newClockPairTemplate;
@@ -265,7 +265,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
                         }
 
-                        if (howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW) {
+                        if (howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                             backingList.add(newClockPairTemplate);
                             onAdd();
                         } else {

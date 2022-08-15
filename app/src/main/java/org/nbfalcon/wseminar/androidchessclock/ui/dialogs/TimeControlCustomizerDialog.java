@@ -24,8 +24,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.android.ViewFlipperUtils;
 // FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: code to start this dialog is copy-pasted 3x; this needs a refactoring
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
-// FIXME: timeControl/timeMode naming is inconsistent
-public class PlayerClockCustomizerDialog extends DialogFragment {
+public class TimeControlCustomizerDialog extends DialogFragment {
     private final @NotNull OnTimeSet onTimeSet;
     private final boolean forPlayer;
     private TimeControlStageCustomizer stage1, stage2;
@@ -37,7 +36,7 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
 
     private boolean settingWantSaveAs = true;
 
-    public PlayerClockCustomizerDialog(boolean forPlayer, @NotNull OnTimeSet onTimeSet) {
+    public TimeControlCustomizerDialog(boolean forPlayer, @NotNull OnTimeSet onTimeSet) {
         this.forPlayer = forPlayer;
         this.onTimeSet = onTimeSet;
     }
@@ -142,6 +141,6 @@ public class PlayerClockCustomizerDialog extends DialogFragment {
 
     @FunctionalInterface
     public interface OnTimeSet {
-        void setTime(PlayerClockCustomizerDialog dialog);
+        void setTime(TimeControlCustomizerDialog dialog);
     }
 }

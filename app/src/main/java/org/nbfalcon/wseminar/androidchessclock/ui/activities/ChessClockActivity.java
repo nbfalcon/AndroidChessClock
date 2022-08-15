@@ -25,7 +25,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleSt
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
-import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.PlayerClockCustomizerDialog;
+import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
 import org.nbfalcon.wseminar.androidchessclock.util.android.SimpleMutableListAdapter;
@@ -38,7 +38,7 @@ public class ChessClockActivity extends AppCompatActivity {
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
     private SimpleMutableListAdapter<ClockPairTemplate> timeControlsList;
-    private AppCompatSpinner timeModePicker;
+    private AppCompatSpinner timeControlPicker;
     private ActivityResultLauncher<Intent> manageTimeControlsLauncher;
     private ClockPairTemplate theCustomItem;
     private StorageDBHelper dbHelper;
@@ -73,8 +73,8 @@ public class ChessClockActivity extends AppCompatActivity {
 
         myActivityPreferences = getPreferences(MODE_PRIVATE);
 
-        timeModePicker = findViewById(R.id.timeModePicker);
-        timeModePicker.setAdapter(timeControlsList);
+        timeControlPicker = findViewById(R.id.timeControlPicker);
+        timeControlPicker.setAdapter(timeControlsList);
 
         manageTimeControlsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             Intent data = result.getData();
@@ -111,15 +111,15 @@ public class ChessClockActivity extends AppCompatActivity {
         };
 
         if (savedInstanceState != null) {
-            timeModePicker.setSelection(savedInstanceState.getInt("selectedTimeControl"));
-            timeModePicker.setOnItemSelectedListener(tmPickerAdapter);
+            timeControlPicker.setSelection(savedInstanceState.getInt("selectedTimeControl"));
+            timeControlPicker.setOnItemSelectedListener(tmPickerAdapter);
             theClock.updateClocks();
             uiView.onTransition(theClock.getState());
         } else {
-            timeModePicker.setOnItemSelectedListener(tmPickerAdapter);
+            timeControlPicker.setOnItemSelectedListener(tmPickerAdapter);
             int last = myActivityPreferences.getInt(PREF_LAST_TIME_CONTROL_SELECTED, 0);
-            if (timeModePicker.getSelectedItemPosition() != last) {
-                timeModePicker.setSelection(last);
+            if (timeControlPicker.getSelectedItemPosition() != last) {
+                timeControlPicker.setSelection(last);
             }
         }
     }
@@ -143,7 +143,7 @@ public class ChessClockActivity extends AppCompatActivity {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
                     SimpleMutableList.toArray(timeControlsList.getBackingList(), ClockPairTemplate.EMPTY_ARRAY));
-            manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeModePicker.getSelectedItem());
+            manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeControlPicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
         });
@@ -152,12 +152,12 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {
-        PlayerClockCustomizerDialog clockDialog = new PlayerClockCustomizerDialog(whichPlayer, (dialog) -> {
+        TimeControlCustomizerDialog clockDialog = new TimeControlCustomizerDialog(whichPlayer, (dialog) -> {
             SingleStageTimeControlTemplate p1 = new SingleStageTimeControlTemplate("FIXME", dialog.getStage1OrBoth().getBaseTimeMS(), dialog.getStage1OrBoth().getIncrementMS(), dialog.getStage1OrBoth().getIncrementType());
 
             @NotNull String name = dialog.getTimeControlName();
-            PlayerClockCustomizerDialog.HowExited howExited = dialog.getResultType();
-            @NotNull String forceName = howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW ? name : "Custom";
+            TimeControlCustomizerDialog.HowExited howExited = dialog.getResultType();
+            @NotNull String forceName = howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW ? name : "Custom";
 
             ClockPairTemplate newClockPairTemplate;
             if (dialog.shouldSetForBothPlayers()) {
@@ -167,16 +167,16 @@ public class ChessClockActivity extends AppCompatActivity {
                 newClockPairTemplate = new ClockPairTemplate(forceName, p1, p2);
             }
 
-            if (howExited == PlayerClockCustomizerDialog.HowExited.CREATE_NEW) {
+            if (howExited == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                 // Insert before special "Custom" item
                 timeControlsList.add(newClockPairTemplate);
                 // This will indirectly trigger setClocks
-                timeModePicker.setSelection(timeModePicker.getCount() - 2);
+                timeControlPicker.setSelection(timeControlPicker.getCount() - 2);
             } else {
                 // FIXME: only if something ackshually changed
                 // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
                 theCustomItem.bindFrom(newClockPairTemplate);
-                timeModePicker.setSelection(timeModePicker.getCount() - 1);
+                timeControlPicker.setSelection(timeControlPicker.getCount() - 1);
                 theClock.setClocks(theCustomItem);
             }
         });
@@ -202,7 +202,7 @@ public class ChessClockActivity extends AppCompatActivity {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable("theClock", theClock);
-        outState.putInt("selectedTimeControl", timeModePicker.getSelectedItemPosition());
+        outState.putInt("selectedTimeControl", timeControlPicker.getSelectedItemPosition());
     }
 
     @Override
@@ -216,7 +216,7 @@ public class ChessClockActivity extends AppCompatActivity {
     private class ChessClockUiViewImpl implements ChessClock.ChessClockView {
         private final @NotNull TimerView player1Clock, player2Clock;
         private final @NotNull StartButton startButton;
-        private final @NotNull AppCompatSpinner timeModePicker;
+        private final @NotNull AppCompatSpinner timeControlPicker;
 
         private ChessClock theClockModel;
 
@@ -224,7 +224,7 @@ public class ChessClockActivity extends AppCompatActivity {
             this.player1Clock = bindFrom.findViewById(R.id.player1Clock);
             this.player2Clock = bindFrom.findViewById(R.id.player2Clock);
             this.startButton = bindFrom.findViewById(R.id.startButton);
-            this.timeModePicker = bindFrom.findViewById(R.id.timeModePicker);
+            this.timeControlPicker = bindFrom.findViewById(R.id.timeControlPicker);
         }
 
         public void injectClockModel(@NotNull ChessClock theClockModel) {
@@ -242,7 +242,7 @@ public class ChessClockActivity extends AppCompatActivity {
             switch (toState) {
                 case INIT:
                     startButton.setState(StartButton.State.START);
-                    timeModePicker.setEnabled(true);
+                    timeControlPicker.setEnabled(true);
                     break;
                 case PAUSED:
                     startButton.setState(StartButton.State.START);
@@ -252,7 +252,7 @@ public class ChessClockActivity extends AppCompatActivity {
                     break;
                 case TICKING:
                     startButton.setState(StartButton.State.STOP);
-                    timeModePicker.setEnabled(false);
+                    timeControlPicker.setEnabled(false);
                     break;
             }
 

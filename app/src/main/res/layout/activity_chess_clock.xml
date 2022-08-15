@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatSpinner
-        android:id="@+id/timeModePicker"
+        android:id="@+id/timeControlPicker"
         android:layout_width="160dp"
         android:layout_height="0dp"
         android:spinnerMode="dropdown"
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/player2Clock"
-        app:layout_constraintLeft_toRightOf="@id/timeModePicker"
+        app:layout_constraintLeft_toRightOf="@id/timeControlPicker"
         app:layout_constraintTop_toBottomOf="@id/player1Clock" />
 
     <org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView
