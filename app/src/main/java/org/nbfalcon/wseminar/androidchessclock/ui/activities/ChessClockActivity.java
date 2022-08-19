@@ -60,12 +60,9 @@ public class ChessClockActivity extends AppCompatActivity {
         }
 
         theClock = savedClock != null ? savedClock : new ChessClock();
-        ChessClockUiViewImpl uiView = new ChessClockUiViewImpl(this);
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
         theClock.injectTimer(timer);
-        uiView.injectClockModel(theClock);
-        uiView.setupCallbacks();
 
         dbHelper = new StorageDBHelper(getApplicationContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -112,6 +109,8 @@ public class ChessClockActivity extends AppCompatActivity {
             //  (since spinner listeners are called on the ui thread the first time eventually, not *now*)
             theClock.setClocks(timeControlsList.getBackingList().get(last));
         }
+        ChessClockUiViewImpl uiView = new ChessClockUiViewImpl(this, theClock);
+        uiView.setupCallbacks();
         theClock.injectView(uiView);
         uiView.init();
 
@@ -212,29 +211,30 @@ public class ChessClockActivity extends AppCompatActivity {
         private final @NotNull StartButton startButton;
         private final @NotNull AppCompatSpinner timeControlPicker;
 
-        private ChessClock myClock;
+        private final @NotNull ChessClock myClock;
 
-        private ChessClockUiViewImpl(@NotNull ChessClockActivity bindFrom) {
+
+        private ChessClockUiViewImpl(@NotNull ChessClockActivity bindFrom, @NotNull ChessClock myClock) {
             this.player1Clock = bindFrom.findViewById(R.id.player1Clock);
             this.player2Clock = bindFrom.findViewById(R.id.player2Clock);
             this.startButton = bindFrom.findViewById(R.id.startButton);
             this.timeControlPicker = bindFrom.findViewById(R.id.timeControlPicker);
+            this.myClock = myClock;
         }
 
-        public void injectClockModel(@NotNull ChessClock theClockModel) {
-            this.myClock = theClockModel;
+        public void setupCallbacks() {
+            startButton.setOnClickListener(view -> myClock.onPressStartButton());
+            player1Clock.setOnClickListener(new TimerButtonListener(false));
+            player2Clock.setOnClickListener(new TimerButtonListener(true));
+
+            player1Clock.setOnLongClickListener(new TimerButtonLongClickListener(false));
+            player2Clock.setOnLongClickListener(new TimerButtonLongClickListener(true));
         }
 
         public void init() {
             myClock.updateClocks();
             onPlayerCurrent(myClock.getCurrentPlayer());
             onTransition(myClock.getState());
-        }
-
-        @Override
-        public void onUpdateTime(boolean player, long millis) {
-            TimerView which = !player ? player1Clock : player2Clock;
-            which.setTime(millis / 1000);
         }
 
         @Override
@@ -276,13 +276,10 @@ public class ChessClockActivity extends AppCompatActivity {
             player2Clock.setEnabled(newCurrent);
         }
 
-        public void setupCallbacks() {
-            startButton.setOnClickListener(view -> myClock.onPressStartButton());
-            player1Clock.setOnClickListener(new TimerButtonListener(false));
-            player2Clock.setOnClickListener(new TimerButtonListener(true));
-
-            player1Clock.setOnLongClickListener(new TimerButtonLongClickListener(false));
-            player2Clock.setOnLongClickListener(new TimerButtonLongClickListener(true));
+        @Override
+        public void onUpdateTime(boolean player, long millis) {
+            TimerView which = !player ? player1Clock : player2Clock;
+            which.setTime(millis / 1000);
         }
 
         private class TimerButtonListener implements View.OnClickListener {
