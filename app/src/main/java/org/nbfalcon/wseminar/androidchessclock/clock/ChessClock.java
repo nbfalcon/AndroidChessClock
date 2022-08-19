@@ -44,16 +44,16 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         return Math.min(-1, clock.getTimeLeft());
     }
 
+    public void injectView(ChessClockView view) {
+        this.view = view;
+    }
+
     public void injectTimer(Timer timer) {
         this.timer = timer;
     }
 
     public void startTimerDelayed() {
         timer.onStartTimer(this, getTimeHint(getClockOfCurrentPlayer()));
-    }
-
-    public void injectView(ChessClockView view) {
-        this.view = view;
     }
 
     public boolean getCurrentPlayer() {

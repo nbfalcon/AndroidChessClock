@@ -249,6 +249,8 @@ public class ChessClockActivity extends AppCompatActivity {
                     break;
                 case GAME_OVER:
                     startButton.setState(StartButton.State.RESTART);
+                    player1Clock.setEnabled(false);
+                    player2Clock.setEnabled(false);
                     break;
                 case TICKING:
                     startButton.setState(StartButton.State.STOP);
