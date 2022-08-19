@@ -277,29 +277,12 @@ public class ChessClockActivity extends AppCompatActivity {
         }
 
         public void setupCallbacks() {
-            startButton.setOnClickListener(this::onClickStartButton);
+            startButton.setOnClickListener(view -> myClock.onPressStartButton());
             player1Clock.setOnClickListener(new TimerButtonListener(false));
             player2Clock.setOnClickListener(new TimerButtonListener(true));
 
             player1Clock.setOnLongClickListener(new TimerButtonLongClickListener(false));
             player2Clock.setOnLongClickListener(new TimerButtonLongClickListener(true));
-        }
-
-        private void onClickStartButton(View ignored) {
-            switch (myClock.getState()) {
-                case INIT:
-                    myClock.onStart(null);
-                    break;
-                case TICKING:
-                    myClock.onPause();
-                    break;
-                case PAUSED:
-                    myClock.onResume(null);
-                    break;
-                case GAME_OVER:
-                    myClock.onReset();
-                    break;
-            }
         }
 
         private class TimerButtonListener implements View.OnClickListener {
@@ -311,19 +294,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                switch (myClock.getState()) {
-                    case INIT:
-                        myClock.onStart(!player);
-                        break;
-                    case PAUSED:
-                        myClock.onResume(!player);
-                        break;
-                    case TICKING:
-                        if (myClock.getCurrentPlayer() == player) {
-                            myClock.onFinishMove();
-                        }
-                        break;
-                }
+                myClock.onPressPlayerClockButton(player);
             }
         }
 

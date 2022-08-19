@@ -104,6 +104,42 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         updateClocks();
     }
 
+    public void onPressPlayerClockButton(boolean forPlayer) {
+        switch (getState()) {
+            case INIT:
+                onStart(!forPlayer);
+                break;
+            case PAUSED:
+                onResume(!forPlayer);
+                break;
+            case TICKING:
+                if (getCurrentPlayer() == forPlayer) {
+                    onFinishMove();
+                }
+                break;
+        }
+    }
+
+    /**
+     * When the multi-function (START|PAUSE|RESUME|RESTART) button is pressed.
+     */
+    public void onPressStartButton() {
+        switch (getState()) {
+            case INIT:
+                onStart(null);
+                break;
+            case TICKING:
+                onPause();
+                break;
+            case PAUSED:
+                onResume(null);
+                break;
+            case GAME_OVER:
+                onReset();
+                break;
+        }
+    }
+
     public void onTick(long elapsedMS) {
         if (currentState == State.TICKING || currentState == State.PAUSED) {
             TimeControl which = getClockOfCurrentPlayer();
