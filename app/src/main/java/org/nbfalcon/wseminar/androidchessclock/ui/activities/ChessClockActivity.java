@@ -223,6 +223,9 @@ public class ChessClockActivity extends AppCompatActivity {
         private final @NotNull ChessClock myClock;
 
 
+        private boolean lowTimeAlreadyTriggered = false;
+
+
         private ChessClockUiViewImpl(@NotNull ChessClockActivity bindFrom, @NotNull ChessClock myClock) {
             this.player1Clock = bindFrom.findViewById(R.id.player1Clock);
             this.player2Clock = bindFrom.findViewById(R.id.player2Clock);
@@ -249,6 +252,7 @@ public class ChessClockActivity extends AppCompatActivity {
         @Override
         public void onTransition(ChessClock.@NotNull State toState) {
             updateUIForTransition(toState);
+            // Don't call this on every screen rotation
             if (toState == ChessClock.State.GAME_OVER
                     && AppPreferencesActivity.getPrefEnableGameOverSound(myActivityPreferences)) {
                 SoundUtil.playSound(ChessClockActivity.this, R.raw.sound_lichess_standard_genericnotify);
@@ -260,6 +264,7 @@ public class ChessClockActivity extends AppCompatActivity {
                 case INIT:
                     startButton.setState(StartButton.State.START);
                     timeControlPicker.setEnabled(true);
+                    lowTimeAlreadyTriggered = false;
                     break;
                 case PAUSED:
                     startButton.setState(StartButton.State.START);
@@ -295,8 +300,15 @@ public class ChessClockActivity extends AppCompatActivity {
 
         @Override
         public void onUpdateTime(boolean player, long millis) {
+            final long seconds = millis / 1000;
+
+            if (myClock.getState() == ChessClock.State.TICKING && !lowTimeAlreadyTriggered && seconds < 10 /* lichess does this */) {
+                lowTimeAlreadyTriggered = true;
+                SoundUtil.playSound(ChessClockActivity.this, R.raw.sound_lichess_standard_lowtime);
+            }
+
             TimerView which = !player ? player1Clock : player2Clock;
-            which.setTime(millis / 1000);
+            which.setTime(seconds);
         }
 
         private class TimerButtonListener implements View.OnClickListener {
