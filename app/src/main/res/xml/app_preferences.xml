@@ -5,4 +5,9 @@
         android:defaultValue="true"
         android:key="enableGameOverSound"
         android:title="Enable Game Over Sound" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="enableLowTimeSound"
+        android:title="Enable Sound when low on Time"
+        android:summary="(&lt; 10s)" />
 </PreferenceScreen>

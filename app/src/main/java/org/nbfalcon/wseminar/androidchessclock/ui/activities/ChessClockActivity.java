@@ -302,7 +302,9 @@ public class ChessClockActivity extends AppCompatActivity {
         public void onUpdateTime(boolean player, long millis) {
             final long seconds = millis / 1000;
 
-            if (myClock.getState() == ChessClock.State.TICKING && !lowTimeAlreadyTriggered && seconds < 10 /* lichess does this */) {
+            if (AppPreferencesActivity.getPrefEnableLowTimeSound(myActivityPreferences)
+                    && myClock.getState() == ChessClock.State.TICKING
+                    && !lowTimeAlreadyTriggered && seconds < 10 /* lichess does this */) {
                 lowTimeAlreadyTriggered = true;
                 SoundUtil.playSound(ChessClockActivity.this, R.raw.sound_lichess_standard_lowtime);
             }

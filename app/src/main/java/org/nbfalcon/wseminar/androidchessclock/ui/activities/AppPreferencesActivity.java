@@ -20,6 +20,10 @@ public class AppPreferencesActivity extends SettingsActivityBase {
         return preferences.getBoolean("enableGameOverSound", true);
     }
 
+    public static boolean getPrefEnableLowTimeSound(SharedPreferences preferences) {
+        return preferences.getBoolean("enableLowTimeSound", false);
+    }
+
     // public needed so that the App doesn't crash
     public static class AppPreferencesFragment extends PreferenceFragmentCompat {
         @Override
