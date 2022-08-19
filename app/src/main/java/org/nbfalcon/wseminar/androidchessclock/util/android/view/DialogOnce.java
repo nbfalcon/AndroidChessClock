@@ -1,4 +1,4 @@
-package org.nbfalcon.wseminar.androidchessclock.util.android;
+package org.nbfalcon.wseminar.androidchessclock.util.android.view;
 
 import android.content.Context;
 import android.content.DialogInterface;

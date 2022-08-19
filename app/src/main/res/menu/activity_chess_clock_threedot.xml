@@ -11,4 +11,9 @@
         android:icon="@drawable/ic_material_manage_history"
         android:title="Manage Time Controls"
         app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/menuSettings"
+        android:title="Settings"
+        android:icon="@drawable/ic_material_settings"
+        app:showAsAction="ifRoom|withText" />
 </menu>

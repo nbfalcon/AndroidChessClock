@@ -22,8 +22,8 @@ import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomizer;
-import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
-import org.nbfalcon.wseminar.androidchessclock.util.android.ViewFlipperUtils;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
 // FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
@@ -50,10 +50,10 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
         @NotNull String name = getTimeControlName();
         ClockPairTemplate newClockPairTemplate;
         if (shouldSetForBothPlayers()) {
-            newClockPairTemplate = new ClockPairTemplate(getTimeControlName(), p1, null);
+            newClockPairTemplate = new ClockPairTemplate(name, p1, null);
         } else {
             SingleStageTimeControlTemplate p2 = new SingleStageTimeControlTemplate(getStage2().getBaseTimeMS(), getStage2().getIncrementMS(), getStage2().getIncrementType());
-            newClockPairTemplate = new ClockPairTemplate(getTimeControlName(), p1, p2);
+            newClockPairTemplate = new ClockPairTemplate(name, p1, p2);
         }
         return newClockPairTemplate;
     }
@@ -65,16 +65,7 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
     }
 
     public void setSettingWantSaveAs(boolean settingWantSaveAs) {
-        if (settingWantSaveAs != this.settingWantSaveAs) {
-            this.settingWantSaveAs = settingWantSaveAs;
-            if (!settingWantSaveAs) {
-                timeControlSaveAs.setVisibility(View.GONE);
-                timeControlSaveAs.setEnabled(false);
-            } else {
-                timeControlSaveAs.setVisibility(View.VISIBLE);
-                timeControlSaveAs.setEnabled(true);
-            }
-        }
+        this.settingWantSaveAs = settingWantSaveAs;
     }
 
     private void setupViews(@NotNull View from) {
@@ -118,6 +109,13 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
         stage2.bindFrom((SingleStageTimeControlTemplate) bindFrom.getPlayer2());
 
         customTimeControlName.setText(bindFrom.toString());
+        if (!settingWantSaveAs) {
+            timeControlSaveAs.setVisibility(View.GONE);
+            timeControlSaveAs.setEnabled(false);
+        } else {
+            timeControlSaveAs.setVisibility(View.VISIBLE);
+            timeControlSaveAs.setEnabled(true);
+        }
 
         stagesTabs.selectTab(stagesTabs.getTabAt(!forPlayer ? 0 : 1));
         setForBothPlayers.setChecked(bindFrom.setForBothPlayers());

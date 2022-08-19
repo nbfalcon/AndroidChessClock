@@ -9,10 +9,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidChessClock">
         <activity
-            android:name=".ui.activities.ManageTimeControlsActivity"
-            android:exported="false"
-            android:configChanges="orientation" />
-        <activity
             android:name=".ui.activities.ChessClockActivity"
             android:exported="true">
             <intent-filter>
@@ -20,6 +16,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.activities.ManageTimeControlsActivity"
+            android:exported="false"
+            android:configChanges="orientation"
+            android:icon="@drawable/ic_material_manage_history"
+            android:label="Manage Time Controls" />
+        <activity
+            android:name=".ui.activities.AppPreferencesActivity"
+            android:exported="false"
+            android:configChanges="orientation"
+            android:icon="@drawable/ic_material_settings"
+            android:label="Settings" />
     </application>
 
 </manifest>

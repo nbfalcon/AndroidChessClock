@@ -29,7 +29,7 @@ import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
-import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.NoListenerSelection;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
@@ -124,7 +124,7 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NotNull Menu menu) {
         getMenuInflater().inflate(R.menu.activity_chess_clock_threedot, menu);
 
         menuRestartGame = menu.findItem(R.id.menuRestartGame);
@@ -137,13 +137,20 @@ public class ChessClockActivity extends AppCompatActivity {
             return false;
         });
 
-        MenuItem item = menu.findItem(R.id.menuManageTimeControls);
-        item.setOnMenuItemClickListener(menuItem -> {
+        MenuItem menuManageTimeControls = menu.findItem(R.id.menuManageTimeControls);
+        menuManageTimeControls.setOnMenuItemClickListener(menuItem -> {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
                     timeControlsList.getBackingList().toArray(ClockPairTemplate.EMPTY_ARRAY));
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeControlPicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
+            return true;
+        });
+
+        MenuItem menuSettings = menu.findItem(R.id.menuSettings);
+        menuSettings.setOnMenuItemClickListener(menuItem -> {
+            Intent appPreferencesActivity = new Intent(this, AppPreferencesActivity.class);
+            startActivity(appPreferencesActivity);
             return true;
         });
 

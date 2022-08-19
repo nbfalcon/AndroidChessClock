@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
@@ -22,14 +21,15 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeContro
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
-import org.nbfalcon.wseminar.androidchessclock.util.android.DialogOnce;
+import org.nbfalcon.wseminar.androidchessclock.util.android.activity.SettingsActivityBase;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListRecyclerAdapter;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
 import java.util.Arrays;
 
-public class ManageTimeControlsActivity extends AppCompatActivity {
+public class ManageTimeControlsActivity extends SettingsActivityBase {
     public static final String KEY_CUSTOM_TIME_CONTROLS = "org.nbfalcon.wseminar.AndroidChessClock.customTimeControls";
     public static final String KEY_NEW_TIME_CONTROL_PRESET = "org.nbfalcon.wseminar.AndroidChessClock.newTimeControlPreset";
     public static final String KEY_RESULT_CHANGES = "org.nbfalcon.wseminar.AndroidChessClock.manageTimeControlsResult";
@@ -93,14 +93,14 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                 });
                 myTimeControlCustomizer.setSettingWantSaveAs(false);
                 myTimeControlCustomizer.show(getSupportFragmentManager(), null);
-             }
+            }
         });
     }
 
     @Override
-    public void onBackPressed() {
+    public void finish() {
         setResultForFinish();
-        super.onBackPressed();
+        super.finish();
     }
 
     private void setResultForFinish() {
@@ -110,7 +110,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NotNull Menu menu) {
         getMenuInflater().inflate(R.menu.activity_manage_time_controls_threedot, menu);
 
         menu.findItem(R.id.menuResetTimeControls).setOnMenuItemClickListener(item -> {
