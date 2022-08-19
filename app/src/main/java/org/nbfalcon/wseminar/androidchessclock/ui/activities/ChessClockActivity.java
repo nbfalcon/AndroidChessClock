@@ -171,7 +171,7 @@ public class ChessClockActivity extends AppCompatActivity {
                     theClock.setClocks(theCustomItem);
                 }
             });
-            myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+            myTimeControlCustomizer.show(getSupportFragmentManager(), null);
         }
     }
 

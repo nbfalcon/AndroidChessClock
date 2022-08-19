@@ -92,7 +92,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                     tcAdapter.add(newClockPairTemplate);
                 });
                 myTimeControlCustomizer.setSettingWantSaveAs(false);
-                myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+                myTimeControlCustomizer.show(getSupportFragmentManager(), null);
              }
         });
     }
@@ -247,7 +247,7 @@ public class ManageTimeControlsActivity extends AppCompatActivity {
                             }
                         });
                         myTimeControlCustomizer.setSettingWantSaveAs(true);
-                        myTimeControlCustomizer.show(getSupportFragmentManager(), "FIXME meow");
+                        myTimeControlCustomizer.show(getSupportFragmentManager(), null);
                     }
                 });
                 this.deleteRow = itemView.findViewById(R.id.deleteRow);
