@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSpinner;
+import androidx.preference.PreferenceManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.R;
@@ -29,8 +30,9 @@ import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
-import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListAdapter;
+import org.nbfalcon.wseminar.androidchessclock.util.android.sound.SoundUtil;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.NoListenerSelection;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
@@ -72,7 +74,7 @@ public class ChessClockActivity extends AppCompatActivity {
         theCustomItem = new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
         timeControlsList.setBonusItem(theCustomItem);
 
-        myActivityPreferences = getPreferences(MODE_PRIVATE);
+        myActivityPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         timeControlPicker = new NoListenerSelection<>(findViewById(R.id.timeControlPicker));
         timeControlPicker.setAdapter(timeControlsList);
@@ -241,11 +243,19 @@ public class ChessClockActivity extends AppCompatActivity {
         public void init() {
             myClock.updateClocks();
             onPlayerCurrent(myClock.getCurrentPlayer());
-            onTransition(myClock.getState());
+            updateUIForTransition(myClock.getState());
         }
 
         @Override
         public void onTransition(ChessClock.@NotNull State toState) {
+            updateUIForTransition(toState);
+            if (toState == ChessClock.State.GAME_OVER
+                    && AppPreferencesActivity.getPrefEnableGameOverSound(myActivityPreferences)) {
+                SoundUtil.playSound(ChessClockActivity.this, R.raw.sound_lichess_standard_genericnotify);
+            }
+        }
+
+        private void updateUIForTransition(ChessClock.@NotNull State toState) {
             switch (toState) {
                 case INIT:
                     startButton.setState(StartButton.State.START);

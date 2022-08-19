@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="enableSoundOnGameOver"
+        android:defaultValue="true"
+        android:key="enableGameOverSound"
         android:title="Enable Game Over Sound" />
 </PreferenceScreen>

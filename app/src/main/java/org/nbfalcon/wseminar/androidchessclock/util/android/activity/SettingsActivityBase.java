@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import org.jetbrains.annotations.NotNull;
-import org.nbfalcon.wseminar.androidchessclock.preferences.AppPreferencesFragment;
 
 /**
  * A "settings" activity base class with a back button.
