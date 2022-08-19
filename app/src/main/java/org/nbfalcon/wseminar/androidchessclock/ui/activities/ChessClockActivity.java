@@ -63,7 +63,6 @@ public class ChessClockActivity extends AppCompatActivity {
         ChessClockUiViewImpl uiView = new ChessClockUiViewImpl(this);
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
-        theClock.injectView(uiView);
         theClock.injectTimer(timer);
         uiView.injectClockModel(theClock);
         uiView.setupCallbacks();
@@ -84,7 +83,16 @@ public class ChessClockActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (theClock.getState() == ChessClock.State.INIT) {
-                    onTimeControlSelected(position);
+                    // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state"
+                    if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
+                        ClockPairTemplate prevSelected = theClock.getClocks();
+                        theCustomItem.bindFrom(prevSelected);
+                        showConfigureClockDialog(false);
+                    } else {
+                        theClock.setClocks(timeControlsList.getBackingList().get(position));
+                        // FIXME: We somehow need to store the custom item
+                        myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
+                    }
                 }
             }
 
@@ -96,16 +104,16 @@ public class ChessClockActivity extends AppCompatActivity {
 
         if (savedClock != null) {
             timeControlPicker.setSelectionNoListener(savedInstanceState.getInt("selectedTimeControl"));
-            theClock.updateClocks();
-            uiView.onTransition(theClock.getState());
             // We don't go through theClock.setClocks() -> listeners
         } else {
             int last = myActivityPreferences.getInt(PREF_LAST_TIME_CONTROL_SELECTED, 0);
             timeControlPicker.setSelectionNoListener(last);
             // We must update the UI now, otherwise we'll get crashes when rotating the app on app startup
             //  (since spinner listeners are called on the ui thread the first time eventually, not *now*)
-            onTimeControlSelected(last);
+            theClock.setClocks(timeControlsList.getBackingList().get(last));
         }
+        theClock.injectView(uiView);
+        uiView.init();
 
         manageTimeControlsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             Intent data = result.getData();
@@ -114,19 +122,6 @@ public class ChessClockActivity extends AppCompatActivity {
             changes.applyTo(timeControlsList.getBackingList());
             timeControlsList.notifyDataSetChanged();
         });
-    }
-
-    private void onTimeControlSelected(int position) {
-        // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state"
-        if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
-            ClockPairTemplate prevSelected = theClock.getClocks();
-            theCustomItem.bindFrom(prevSelected);
-            showConfigureClockDialog(false);
-        } else {
-            theClock.setClocks(timeControlsList.getBackingList().get(position));
-            // FIXME: We somehow need to store the custom item
-            myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
-        }
     }
 
     @Override
@@ -217,7 +212,7 @@ public class ChessClockActivity extends AppCompatActivity {
         private final @NotNull StartButton startButton;
         private final @NotNull AppCompatSpinner timeControlPicker;
 
-        private ChessClock theClockModel;
+        private ChessClock myClock;
 
         private ChessClockUiViewImpl(@NotNull ChessClockActivity bindFrom) {
             this.player1Clock = bindFrom.findViewById(R.id.player1Clock);
@@ -227,7 +222,13 @@ public class ChessClockActivity extends AppCompatActivity {
         }
 
         public void injectClockModel(@NotNull ChessClock theClockModel) {
-            this.theClockModel = theClockModel;
+            this.myClock = theClockModel;
+        }
+
+        public void init() {
+            myClock.updateClocks();
+            onPlayerCurrent(myClock.getCurrentPlayer());
+            onTransition(myClock.getState());
         }
 
         @Override
@@ -252,12 +253,25 @@ public class ChessClockActivity extends AppCompatActivity {
                 case TICKING:
                     startButton.setState(StartButton.State.STOP);
                     timeControlPicker.setEnabled(false);
+                    onPlayerCurrent(myClock.getCurrentPlayer());
                     break;
+            }
+
+            // A "paused" state
+            if (toState == ChessClock.State.INIT || toState == ChessClock.State.PAUSED) {
+                player1Clock.setEnabled(true);
+                player2Clock.setEnabled(true);
             }
 
             if (menuRestartGame != null) {
                 menuRestartGame.setEnabled(toState == ChessClock.State.GAME_OVER || toState == ChessClock.State.PAUSED);
             }
+        }
+
+        @Override
+        public void onPlayerCurrent(boolean newCurrent) {
+            player1Clock.setEnabled(!newCurrent);
+            player2Clock.setEnabled(newCurrent);
         }
 
         public void setupCallbacks() {
@@ -270,18 +284,18 @@ public class ChessClockActivity extends AppCompatActivity {
         }
 
         private void onClickStartButton(View ignored) {
-            switch (theClockModel.getState()) {
+            switch (myClock.getState()) {
                 case INIT:
-                    theClockModel.onStart(null);
+                    myClock.onStart(null);
                     break;
                 case TICKING:
-                    theClockModel.onPause();
+                    myClock.onPause();
                     break;
                 case PAUSED:
-                    theClockModel.onResume(null);
+                    myClock.onResume(null);
                     break;
                 case GAME_OVER:
-                    theClockModel.onReset();
+                    myClock.onReset();
                     break;
             }
         }
@@ -295,16 +309,16 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                switch (theClockModel.getState()) {
+                switch (myClock.getState()) {
                     case INIT:
-                        theClockModel.onStart(!player);
+                        myClock.onStart(!player);
                         break;
                     case PAUSED:
-                        theClockModel.onResume(!player);
+                        myClock.onResume(!player);
                         break;
                     case TICKING:
-                        if (theClockModel.getCurrentPlayer() == player) {
-                            theClockModel.onFinishMove();
+                        if (myClock.getCurrentPlayer() == player) {
+                            myClock.onFinishMove();
                         }
                         break;
                 }
@@ -320,7 +334,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                if (theClockModel.getState() == ChessClock.State.INIT) {
+                if (myClock.getState() == ChessClock.State.INIT) {
                     showConfigureClockDialog(player);
                     return true;
                 }

@@ -29,6 +29,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
     private State currentState = State.INIT;
     private ClockPairTemplate clocksTemplate;
     private ClockPair clocks;
+
     public ChessClock() {
     }
 
@@ -81,6 +82,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
     private void onResume1(@Nullable Boolean currentPlayer) {
         if (currentPlayer != null) {
             this.currentPlayer = currentPlayer;
+            view.onPlayerCurrent(currentPlayer);
         }
         timer.onStartTimer(this, getTimeHint(getClockOfCurrentPlayer()));
         setState(State.TICKING);
@@ -99,7 +101,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         assert currentState == State.PAUSED || currentState == State.GAME_OVER;
         clocks = clocksTemplate.create();
         setState(State.INIT);
-        resetViewTimers();
+        updateClocks();
     }
 
     public void onTick(long elapsedMS) {
@@ -114,11 +116,6 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         }
     }
 
-    public void updateClocks() {
-        view.onUpdateTime(false, Math.max(0, clocks.getClockFor(false).getTimeLeft()));
-        view.onUpdateTime(true, Math.max(0, clocks.getClockFor(true).getTimeLeft()));
-    }
-
     private TimeControl getClockOfCurrentPlayer() {
         return clocks.getClockFor(currentPlayer);
     }
@@ -128,9 +125,10 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         getClockOfCurrentPlayer().onMoveFinished();
         timer.onRenewClock();
         currentPlayer = !currentPlayer;
+        view.onPlayerCurrent(currentPlayer);
     }
 
-    private void resetViewTimers() {
+    public void updateClocks() {
         if (view != null) {
             view.onUpdateTime(false, this.clocks.getClockFor(false).getTimeLeft());
             view.onUpdateTime(true, this.clocks.getClockFor(true).getTimeLeft());
@@ -145,7 +143,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
 //        assert currentState == State.INIT;
         clocksTemplate = clocks;
         this.clocks = clocksTemplate.create();
-        resetViewTimers();
+        updateClocks();
     }
 
     @Override
@@ -170,5 +168,7 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         void onUpdateTime(boolean player, long millis);
 
         void onTransition(@NotNull ChessClock.State toState);
+
+        void onPlayerCurrent(boolean newCurrent);
     }
 }
