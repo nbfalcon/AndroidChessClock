@@ -19,6 +19,7 @@ public class NoListenerSelection<Delegate extends AdapterView<DelegateAdapter>, 
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position != noListenerItem) {
                     delegate.onItemSelected(parent, view, position, id);
+                    noListenerItem = -1;
                 }
             }
 
