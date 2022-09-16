@@ -36,7 +36,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         assert sortIds.isEmpty() && items.isEmpty();
 
         String selectPart = "sortId" + CollectionUtilsEx.joinPrefix(columns, ", ");
-        try (Cursor rowIter = db.rawQuery("SELECT " + selectPart + " FROM " + table, new String[]{})) {
+        try (Cursor rowIter = db.rawQuery("SELECT " + selectPart + " FROM " + table + " ORDER BY sortId", new String[]{})) {
             while (rowIter.moveToNext()) {
                 sortIds.add(rowIter.getLong(0));
                 items.add(bindFromCursor(rowIter, 1));
