@@ -24,7 +24,6 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomiz
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
-// FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
 public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissBase {
     private OnTimeSet onResult = null;
@@ -128,7 +127,7 @@ public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissB
             // Since android.app.androidTimePickerDialog does something similar (inflating the view first, then setting stuff up),
             // we are going to do the same; This StackOverflow solution is much more hacky IMHO
             // https://stackoverflow.com/questions/17805040/how-to-create-a-number-picker-dialog
-            rootView = LayoutInflater.from(getContext()).inflate(R.layout.view_player_clock_customizer, null);
+            rootView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_player_clock_customizer, null);
             setupViews(rootView);
         }
         bindViews();

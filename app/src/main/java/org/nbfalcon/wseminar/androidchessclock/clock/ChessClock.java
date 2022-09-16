@@ -74,6 +74,11 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         onResume1(currentPlayer);
     }
 
+    public void onResumeFromDeath() {
+        assert currentState == State.GAME_OVER;
+        onResume1(null);
+    }
+
     public void onResume(@Nullable Boolean currentPlayer) {
         assert currentState == State.PAUSED;
         onResume1(currentPlayer);

@@ -37,6 +37,19 @@
         app:layout_constraintTop_toBottomOf="@id/player1Clock"
         tools:ignore="SpeakableTextPresentCheck" />
 
+    <ImageButton
+        android:id="@+id/addSubTimeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_custom_hourglass_plus_minus"
+        android:contentDescription="Add/remove time of current player"
+        app:layout_constraintBottom_toTopOf="@id/player2Clock"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/startButton"
+        app:layout_constraintTop_toBottomOf="@id/player1Clock"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="SpeakableTextPresentCheck" />
+
     <org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView
         android:id="@+id/player2Clock"
         android:layout_width="match_parent"

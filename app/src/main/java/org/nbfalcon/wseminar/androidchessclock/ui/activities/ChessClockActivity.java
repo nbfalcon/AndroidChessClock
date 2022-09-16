@@ -103,6 +103,11 @@ public class ChessClockActivity extends AppCompatActivity {
         };
         timeControlPicker.setOnItemSelectedListener(timeControlPickerOnSelection);
 
+        View addSubTimeButton = findViewById(R.id.addSubTimeButton);
+        addSubTimeButton.setOnClickListener((ignored) -> {
+            showAddTimePenaltyDialog(theClock.getCurrentPlayer());
+        });
+
         if (savedClock != null) {
             timeControlPicker.setSelectionNoListener(savedInstanceState.getInt("selectedTimeControl"));
             // We don't go through theClock.setClocks() -> listeners
@@ -186,12 +191,16 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     private void showAddTimePenaltyDialog(boolean whichPlayer) {
+        if (theClock.getState() == ChessClock.State.TICKING) theClock.onPause();
         if (onlyOneDialog.withDialog(myPenaltyDialog)) {
             myPenaltyDialog.bind(theClock.getRunningClocks(), whichPlayer, (tp) -> {
                 tp.applyTo(theClock.getRunningClocks());
                 theClock.updateClocks();
             });
             myPenaltyDialog.show(getSupportFragmentManager(), null);
+            if (theClock.getState() == ChessClock.State.GAME_OVER) {
+                theClock.onResumeFromDeath();
+            }
         }
     }
 
