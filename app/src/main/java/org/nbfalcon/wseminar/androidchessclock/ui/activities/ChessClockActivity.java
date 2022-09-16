@@ -283,7 +283,7 @@ public class ChessClockActivity extends AppCompatActivity {
         private void updateUIForTransition(ChessClock.@NotNull State toState) {
             switch (toState) {
                 case INIT:
-                    startButton.setState(StartButton.State.START);
+                    startButton.setState(StartButton.State.INIT);
                     timeControlPicker.setEnabled(true);
                     lowTimeAlreadyTriggered = false;
                     break;
