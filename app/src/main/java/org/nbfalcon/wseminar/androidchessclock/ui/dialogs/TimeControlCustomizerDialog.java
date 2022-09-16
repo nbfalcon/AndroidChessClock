@@ -99,6 +99,30 @@ public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissB
             assert theOtherTab != null;
             theOtherTab.view.setEnabled(!isChecked);
         });
+
+        TimeControlStageCustomizer.OnChangedListener cbSetTimeNameForChange = (prevTimeMS, prevIncrMS, newTimeMS, newIncrMS) -> {
+            if (shouldSetForBothPlayers()) {
+                String actualTCName = getTimeControlName();
+                boolean withBar = actualTCName.contains("|");
+                @Nullable String prevShouldBe = tcName(prevTimeMS, prevIncrMS, withBar);
+                if (prevShouldBe != null && actualTCName.equals(prevShouldBe)) {
+                    String newTCN = tcName(newTimeMS, newIncrMS, withBar);
+                    if (newTCN != null) {
+                        customTimeControlName.setText(newTCN);
+                    }
+                }
+            }
+        };
+        stage1.setOnChangedListener(cbSetTimeNameForChange);
+        stage2.setOnChangedListener(cbSetTimeNameForChange);
+    }
+
+    private static @Nullable String tcName(long baseMS, long incrMS, boolean withBar) {
+        baseMS /= 1000; // seconds
+        if (baseMS % 60 != 0) return null; // 60|0 does not contain seconds information
+        baseMS /= 60;
+        incrMS /= 1000; // seconds
+        return baseMS + (withBar ? "|" : "+") + incrMS;
     }
 
     private void bindViews() {

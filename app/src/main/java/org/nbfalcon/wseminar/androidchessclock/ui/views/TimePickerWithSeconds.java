@@ -9,24 +9,12 @@ import androidx.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class TimePickerWithSeconds extends LinearLayout {
 
-    public TimePickerWithSeconds(Context context) {
-        super(context);
-    }
-
-    public TimePickerWithSeconds(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public TimePickerWithSeconds(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
     private final @NotNull NumberPicker pickerHours;
-
     private final @NotNull NumberPicker pickerMinutes;
-
     private final @NotNull NumberPicker pickerSeconds;
 
     {
@@ -41,6 +29,18 @@ public class TimePickerWithSeconds extends LinearLayout {
         pickerSeconds = findViewById(R.id.pickerSeconds);
         pickerSeconds.setMinValue(0);
         pickerSeconds.setMaxValue(59);
+    }
+
+    public TimePickerWithSeconds(Context context) {
+        super(context);
+    }
+
+    public TimePickerWithSeconds(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    public TimePickerWithSeconds(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     public long getTimeSeconds() {
@@ -60,5 +60,34 @@ public class TimePickerWithSeconds extends LinearLayout {
 
     public void addTime(long deltaTS) {
         setTimeSeconds(Math.max(0, getTimeSeconds() + deltaTS));
+    }
+
+    public void setOnChangeListener(@Nullable OnTimeChanged onTimeChanged) {
+        if (onTimeChanged != null) {
+            pickerSeconds.setOnValueChangedListener((picker, oldVal, newVal) -> {
+                long nowT = getTimeSeconds(), oldT = nowT - newVal + oldVal;
+                onTimeChanged.onChange(oldT, nowT);
+            });
+            pickerMinutes.setOnValueChangedListener((picker, oldVal, newVal) -> {
+                oldVal *= 60;
+                newVal *= 60;
+                long nowT = getTimeSeconds(), oldT = nowT - newVal + oldVal;
+                onTimeChanged.onChange(oldT, nowT);
+            });
+            pickerHours.setOnValueChangedListener((picker, oldVal, newVal) -> {
+                oldVal *= 60 * 60;
+                newVal *= 60 * 60;
+                long nowT = getTimeSeconds(), oldT = nowT - newVal + oldVal;
+                onTimeChanged.onChange(oldT, nowT);
+            });
+        } else {
+            pickerSeconds.setOnValueChangedListener(null);
+            pickerMinutes.setOnValueChangedListener(null);
+            pickerHours.setOnValueChangedListener(null);
+        }
+    }
+
+    public interface OnTimeChanged {
+        void onChange(long prevTimeS, long newTimeS);
     }
 }

@@ -57,4 +57,25 @@ public class TimeControlStageCustomizer extends ConstraintLayout {
         increment.setValue((int) (timeControl.increment / 1000));
         incrementType.setSelection(timeControl.type.ordinal());
     }
+
+    public void setOnChangedListener(@Nullable OnChangedListener onChanged) {
+        if (onChanged != null) {
+            baseTime.setOnChangeListener((prevTimeS, newTimeS) -> {
+                long incr = getIncrementMS();
+                onChanged.onChanged(prevTimeS * 1000, incr, newTimeS * 1000, incr);
+            });
+            increment.setOnValueChangedListener(((picker, oldVal, newVal) -> {
+                long base = getBaseTimeMS();
+                onChanged.onChanged(base, oldVal * 1000L, base, newVal * 1000L);
+            }));
+        }
+        else {
+            baseTime.setOnChangeListener(null);
+            increment.setOnValueChangedListener(null);
+        }
+    }
+
+    public interface OnChangedListener {
+        void onChanged(long prevTimeMS, long prevIncrMS, long newTimeMS, long newIncrMS);
+    }
 }
