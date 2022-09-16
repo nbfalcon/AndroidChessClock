@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TableBackedList<E> implements SimpleMutableList<E> {
-    public static final int ID_GAP = 10;
+    public static final long SORT_ID_GAP = 1000;
     private final ArrayList<E> items = new ArrayList<>();
     // FIXME: make this a long
-    private final ArrayList<Integer> ids = new ArrayList<>();
+    private final ArrayList<Long> sortIds = new ArrayList<>();
 
     private final SQLiteDatabase db;
     private final String table;
@@ -31,13 +31,15 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     protected abstract void bindToDB(E item, ContentValues bindTo);
 
-    private void load() {
-        assert ids.isEmpty() && items.isEmpty();
+    protected abstract void saveId(E item, long rowId);
 
-        String selectPart = "id" + CollectionUtilsEx.joinPrefix(columns, ", ");
+    private void load() {
+        assert sortIds.isEmpty() && items.isEmpty();
+
+        String selectPart = "sortId" + CollectionUtilsEx.joinPrefix(columns, ", ");
         try (Cursor rowIter = db.rawQuery("SELECT " + selectPart + " FROM " + table, new String[]{})) {
             while (rowIter.moveToNext()) {
-                ids.add(rowIter.getInt(0));
+                sortIds.add(rowIter.getLong(0));
                 items.add(bindFromCursor(rowIter, 1));
             }
         }
@@ -45,18 +47,19 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     @Override
     public void add(E item) {
-        int lastId = !ids.isEmpty() ? ids.get(ids.size() - 1) : 1;
-        int newId = lastId + ID_GAP;
-        ids.add(newId);
+        long lastId = !sortIds.isEmpty() ? sortIds.get(sortIds.size() - 1) : 1;
+        long newId = lastId + SORT_ID_GAP;
+        sortIds.add(newId);
 
         ContentValues fields = new ContentValues();
         bindToDB(item, fields);
-        fields.put("id", newId);
+        fields.put("sortId", newId);
 
-        db.insert(table, null, fields);
+        long rowId = db.insert(table, null, fields);
+        saveId(item, rowId);
 
         items.add(item);
-        ids.add(newId);
+        sortIds.add(newId);
     }
 
     @Override
@@ -64,21 +67,22 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         db.beginTransaction();
 
         // FIXME: leverage a gap when possible
-        db.execSQL("UPDATE timeControls SET id = id + " + ID_GAP + " WHERE id > ?", new Object[]{ids.get(index)});
+        db.execSQL("UPDATE timeControls SET sortId = sortId + " + SORT_ID_GAP + " WHERE sortId > ?", new Object[]{sortIds.get(index)});
 
         ContentValues fields = new ContentValues();
         bindToDB(item, fields);
-        fields.put("id", ids.get(index));
-        db.insert(table, null, fields);
+        fields.put("sortId", sortIds.get(index));
+        long rowId = db.insert(table, null, fields);
+        saveId(item, rowId);
 
         db.setTransactionSuccessful();
         db.endTransaction();
 
         items.add(index, item);
-        ids.add(index, ids.get(index));
-        List<Integer> laterRowIDs = ids.subList(index + 1, ids.size());
-        for (int i = 0; i < laterRowIDs.size(); i++) {
-            laterRowIDs.set(i, laterRowIDs.get(i) + 10);
+        sortIds.add(index, sortIds.get(index));
+        List<Long> laterSortIDs = sortIds.subList(index + 1, sortIds.size());
+        for (int i = 0; i < laterSortIDs.size(); i++) {
+            laterSortIDs.set(i, laterSortIDs.get(i) + 10);
         }
     }
 
@@ -86,7 +90,8 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public void set(int index, E newValue) {
         ContentValues fields = new ContentValues();
         bindToDB(newValue, fields);
-        db.update(table, fields, "id = ?", new String[]{ids.get(index).toString()});
+        // Kinda hacky to not use rowId here, but it doesn't matter; sortId is also UNIQUE
+        db.update(table, fields, "sortId = ?", new String[]{sortIds.get(index).toString()});
 
         items.set(index, newValue);
     }
@@ -98,9 +103,9 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     @Override
     public void remove(int index) {
-        db.delete(table, "id = ?", new String[]{ids.get(index).toString()});
+        db.delete(table, "sortId = ?", new String[]{sortIds.get(index).toString()});
         items.remove(index);
-        ids.remove(index);
+        sortIds.remove(index);
     }
 
     @Override
@@ -112,11 +117,12 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public void clear() {
         db.execSQL("DELETE FROM " + table);
         items.clear();
-        ids.clear();
+        sortIds.clear();
     }
 
     @Override
     public void move(int from, int to) {
+        // FIXME: can we optimize this?
         SimpleMutableList.super.move(from, to);
     }
 

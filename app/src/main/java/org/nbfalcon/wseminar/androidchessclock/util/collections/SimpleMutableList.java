@@ -35,4 +35,6 @@ public interface SimpleMutableList<E> {
         }
         return result;
     }
+
+    long getRowId(int pos);
 }

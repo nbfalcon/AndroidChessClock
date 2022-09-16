@@ -11,6 +11,11 @@ public abstract class SimpleMutableListRecyclerAdapter<E, VH extends RecyclerVie
     }
 
     @Override
+    public long getItemId(int position) {
+        return backingList.getRowId(position);
+    }
+
+    @Override
     public int getItemCount() {
         return size();
     }
@@ -70,5 +75,10 @@ public abstract class SimpleMutableListRecyclerAdapter<E, VH extends RecyclerVie
     @Override
     public E[] toArray(E[] a) {
         return backingList.toArray(a);
+    }
+
+    @Override
+    public long getRowId(int pos) {
+        return backingList.getRowId(pos);
     }
 }

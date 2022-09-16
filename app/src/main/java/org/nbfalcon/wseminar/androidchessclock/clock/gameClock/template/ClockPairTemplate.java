@@ -22,8 +22,9 @@ public class ClockPairTemplate implements Parcelable {
             return new ClockPairTemplate[size];
         }
     };
-
     public static final ClockPairTemplate[] EMPTY_ARRAY = new ClockPairTemplate[0];
+
+    public long dbRowId = -1;
     private String name;
     private PlayerClockTemplate player1;
     private @Nullable PlayerClockTemplate player2;

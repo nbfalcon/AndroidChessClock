@@ -184,7 +184,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
             this.attachedTo = recyclerView;
         }
 
-        public void handleLastItemLeft() {
+        public void handleOnly1MoreItemRemaining() {
             // We have one more left, so disable the delete buttons
             if (getItemCount() == 1) {
                 ViewHolder remaining = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
@@ -265,7 +265,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
                                 .setMessage(message)
                                 .setPositiveButton("Ok", (dialog, which) -> {
                                     remove(getAdapterPosition());
-                                    handleLastItemLeft();
+                                    handleOnly1MoreItemRemaining();
                                 })
                                 .setNegativeButton("Cancel", null)
                                 .create();

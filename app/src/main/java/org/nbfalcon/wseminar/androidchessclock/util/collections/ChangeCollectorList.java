@@ -116,6 +116,11 @@ public class ChangeCollectorList<E extends Parcelable> implements SimpleMutableL
         return items.toArray(a);
     }
 
+    @Override
+    public long getRowId(int pos) {
+        return pos;
+    }
+
     private interface Change<E> {
 
         static <E> Change<E> readFromParcel(Parcel in, @NotNull Parcelable.Creator<E> elementReader) {

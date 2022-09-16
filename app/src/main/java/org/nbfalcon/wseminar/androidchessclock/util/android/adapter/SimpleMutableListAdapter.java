@@ -62,7 +62,7 @@ public class SimpleMutableListAdapter<E> extends BaseAdapter implements ThemedSp
 
     @Override
     public E getItem(int position) {
-        if (position < backingList.size()) {
+        if (position != backingList.size()) {
             return backingList.get(position);
         } else {
             return bonusItem;
@@ -71,12 +71,12 @@ public class SimpleMutableListAdapter<E> extends BaseAdapter implements ThemedSp
 
     @Override
     public long getItemId(int position) {
-        return position; // FIXME: monotonic?
+        return getRowId(position);
     }
 
     @Override
     public boolean hasStableIds() {
-        return false; // FIXME: see above: monotonic -> return true
+        return true;
     }
 
     @Override
@@ -152,6 +152,16 @@ public class SimpleMutableListAdapter<E> extends BaseAdapter implements ThemedSp
     @Override
     public E[] toArray(E[] a) {
         return backingList.toArray(a);
+    }
+
+    @Override
+    public long getRowId(int pos) {
+        if (pos != backingList.size()) {
+            return backingList.getRowId(pos);
+        }
+        else {
+            return Long.MAX_VALUE - 1;
+        }
     }
 
     public SimpleMutableList<E> getBackingList() {
