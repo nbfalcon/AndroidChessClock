@@ -67,8 +67,6 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
 
             @Override
             public boolean onMove(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder, @NonNull @NotNull RecyclerView.ViewHolder target) {
-                // FIXME: the spinner does not keep whatever was selected previously; we need ids somehow
-
                 int from = viewHolder.getAdapterPosition();
                 int to = target.getAdapterPosition();
                 if (from != -1 && to != -1) {
@@ -227,7 +225,6 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
                             int myIndex = getAdapterPosition();
                             ClockPairTemplate thisItem = get(myIndex);
                             thisItem.setName(s.toString());
-                            // FIXME: proper SQL?
                             set(myIndex, thisItem);
                         }
                     }

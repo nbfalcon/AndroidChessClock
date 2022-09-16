@@ -12,7 +12,6 @@ import java.util.List;
 public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public static final long SORT_ID_GAP = 1000;
     private final ArrayList<E> items = new ArrayList<>();
-    // FIXME: make this a long
     private final ArrayList<Long> sortIds = new ArrayList<>();
 
     private final SQLiteDatabase db;

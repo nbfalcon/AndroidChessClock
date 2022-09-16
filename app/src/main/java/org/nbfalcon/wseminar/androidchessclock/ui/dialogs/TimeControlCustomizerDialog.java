@@ -24,7 +24,6 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomiz
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
-// FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
 public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissBase {
     private OnTimeSet onResult = null;
     private boolean forPlayer;
@@ -69,7 +68,6 @@ public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissB
         stage1 = from.findViewById(R.id.timeControlStageCustomizer1);
         stage2 = from.findViewById(R.id.timeControlStageCustomizer2);
 
-        // FIXME: cute "(1), (2), (3)" automatic increment?
         customTimeControlName = from.findViewById(R.id.customTimeControlName);
 
         timeControlSaveAs = from.findViewById(R.id.customTimeControlSaveAs);
