@@ -6,6 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcel;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
+import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
@@ -41,6 +45,12 @@ import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableLis
 public class ChessClockActivity extends AppCompatActivity {
 
     private static final String PREF_LAST_TIME_CONTROL_SELECTED = "last_time_control";
+    private static final String PREF_THE_CUSTOM_ITEM_PARCEL = "the_custom_item";
+    // Ignore PREF_THE_CUSTOM_ITEM_PARCEL if the version header does not match
+    private static final int THE_CUSTOM_ITEM_PREF_VERSION = 5; // Not 0 and not 1
+
+    private static final String TAG = "ChessClockActivity";
+
     private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
     private final AddSubPenaltyTimeDialog myPenaltyDialog = new AddSubPenaltyTimeDialog();
     private final DialogOnce onlyOneDialog = new DialogOnce();
@@ -68,15 +78,15 @@ public class ChessClockActivity extends AppCompatActivity {
         Timer timer = new SimpleHandlerTimerImpl(uiHandler);
         theClock.injectTimer(timer);
 
+        // Load saved time controls
         dbHelper = new StorageDBHelper(getApplicationContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         SimpleMutableList<ClockPairTemplate> timeControlsDBList = StorageDBHelper.getTimeControlsTableList(db);
         timeControlsList = new SimpleMutableListAdapter<>(timeControlsDBList,
                 getApplication(), android.R.layout.simple_list_item_1, android.R.layout.simple_list_item_1);
-        theCustomItem = new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
-        timeControlsList.setBonusItem(theCustomItem);
-
         myActivityPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        theCustomItem = loadTheCustomItem();
+        timeControlsList.setBonusItem(theCustomItem);
 
         timeControlPicker = new NoListenerSelection<>(findViewById(R.id.timeControlPicker));
         timeControlPicker.setAdapter(timeControlsList);
@@ -87,13 +97,12 @@ public class ChessClockActivity extends AppCompatActivity {
                     // Our state machine now has the right clock, which the dialog now accesses via "shared mutable state"
                     if (position == timeControlsList.getBackingList().size() /* == "Custom" */) {
                         ClockPairTemplate prevSelected = theClock.getClocks();
-                        theCustomItem.bindFrom(prevSelected);
+                        setTheCustomItem(prevSelected);
                         showConfigureClockDialog(false);
                     } else {
                         theClock.setClocks(timeControlsList.getBackingList().get(position));
-                        // FIXME: We somehow need to store the custom item
-                        myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                     }
+                    myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                 }
             }
 
@@ -116,7 +125,7 @@ public class ChessClockActivity extends AppCompatActivity {
             timeControlPicker.setSelectionNoListener(last);
             // We must update the UI now, otherwise we'll get crashes when rotating the app on app startup
             //  (since spinner listeners are called on the ui thread the first time eventually, not *now*)
-            theClock.setClocks(timeControlsList.getBackingList().get(last));
+            theClock.setClocks(timeControlsList.getItem(last));
         }
         ChessClockUiViewImpl uiView = new ChessClockUiViewImpl(this, theClock);
         uiView.setupCallbacks();
@@ -181,13 +190,60 @@ public class ChessClockActivity extends AppCompatActivity {
                     prev.setName("Custom");
 
                     // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
-                    theCustomItem.bindFrom(newClockPairTemplate);
-                    timeControlPicker.setSelectionNoListener(timeControlPicker.getCount() - 1);
+                    setTheCustomItem(newClockPairTemplate);
+                    int position = timeControlPicker.getCount() - 1;
+                    timeControlPicker.setSelectionNoListener(position);
                     theClock.setClocks(theCustomItem);
+                    myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                 }
             });
             myTimeControlCustomizer.show(getSupportFragmentManager(), null);
         }
+    }
+
+    private void setTheCustomItem(ClockPairTemplate newClockPairTemplate) {
+        theCustomItem.bindFrom(newClockPairTemplate);
+        saveTheCustomItem();
+    }
+
+    private void saveTheCustomItem() {
+        Parcel parcelHack = Parcel.obtain();
+        parcelHack.writeInt(THE_CUSTOM_ITEM_PREF_VERSION);
+
+        String name = theCustomItem.toString();
+        theCustomItem.setName(null);
+        theCustomItem.writeToParcel(parcelHack, 0);
+        theCustomItem.setName(name);
+
+        parcelHack.setDataPosition(0);
+        byte[] bytes = parcelHack.marshall();
+        myActivityPreferences.edit().putString(PREF_THE_CUSTOM_ITEM_PARCEL, Base64.encodeToString(bytes, Base64.DEFAULT)).apply();
+
+        parcelHack.recycle();
+    }
+
+    private ClockPairTemplate loadTheCustomItem() {
+        String custom = myActivityPreferences.getString(PREF_THE_CUSTOM_ITEM_PARCEL, null);
+        if (custom != null) {
+            byte[] bytes = Base64.decode(custom, Base64.DEFAULT);
+            Parcel parcelHack = Parcel.obtain();
+            parcelHack.unmarshall(bytes, 0, bytes.length);
+            parcelHack.setDataPosition(0);
+
+            int version = parcelHack.readInt();
+            ClockPairTemplate customItem = null;
+            if (version == THE_CUSTOM_ITEM_PREF_VERSION) {
+                customItem = ClockPairTemplate.CREATOR.createFromParcel(parcelHack);
+                customItem.setName("Custom");
+            } else {
+                Log.i(TAG, "theCustomItem parcel version mismatch: expected: " + THE_CUSTOM_ITEM_PREF_VERSION + "; found: " + version);
+            }
+
+            parcelHack.recycle();
+            return customItem;
+        }
+
+        return new ClockPairTemplate("Custom", BuiltinTimeControls.BUILTIN[0].getPlayer1(), null);
     }
 
     private void showAddTimePenaltyDialog(boolean whichPlayer) {
@@ -362,8 +418,7 @@ public class ChessClockActivity extends AppCompatActivity {
                         showConfigureClockDialog(player);
                         return true;
                     }
-                }
-                else if (myClock.getState() == ChessClock.State.PAUSED) {
+                } else if (myClock.getState() == ChessClock.State.PAUSED) {
                     showAddTimePenaltyDialog(player);
                     return true;
                 }
