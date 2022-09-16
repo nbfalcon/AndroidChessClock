@@ -21,12 +21,13 @@ import org.nbfalcon.wseminar.androidchessclock.util.Consumer;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
-// FIXME: the milliseconds get lost in the echo
 public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase {
     private @Nullable View rootView;
     private TabLayout whichPlayer;
     private TimePickerWithSeconds p1Time, p2Time;
     private @Nullable ClockPair bindFromMe = null;
+    // The milliseconds shouldn't get lost in the echo
+    private int p1MS, p2MS;
     private Consumer<TimePair> onAccept;
 
     @SuppressLint("InflateParams")
@@ -39,7 +40,7 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
             setupRootView(rootView);
 
             if (bindFromMe != null) {
-                setViewForBind(bindFromMe);
+                bindViews1(bindFromMe);
                 bindFromMe = null;
             }
         }
@@ -47,15 +48,18 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
         return new AlertDialog.Builder(getActivity())
                 .setView(rootView)
                 .setPositiveButton("Accept", (button, what) -> onAccept.accept(new TimePair(
-                        p1Time.getTimeSeconds() * 1000,
-                        p2Time.getTimeSeconds() * 1000)))
+                        p1Time.getTimeSeconds() * 1000 + p1MS,
+                        p2Time.getTimeSeconds() * 1000 + p2MS)))
                 .setNegativeButton("Cancel", null)
                 .create();
     }
 
-    private void setViewForBind(@NotNull ClockPair bind) {
-        p1Time.setTimeSeconds(bind.getClockFor(false).getTimeLeft() / 1000);
-        p2Time.setTimeSeconds(bind.getClockFor(true).getTimeLeft() / 1000);
+    private void bindViews1(@NotNull ClockPair bind) {
+        long p1T = bind.getClockFor(false).getTimeLeft(), p2T = bind.getClockFor(true).getTimeLeft();
+        p1Time.setTimeSeconds(p1T / 1000);
+        p2Time.setTimeSeconds(p2T / 1000);
+        p1MS = (int) (p1T % 1000);
+        p2MS = (int) (p2T % 1000);
     }
 
     private void setupRootView(@NotNull View rootView) {
@@ -78,7 +82,7 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
 
     public void bind(ClockPair runningClocks, Consumer<TimePair> onAcceptCB) {
         if (rootView != null) {
-            setViewForBind(runningClocks);
+            bindViews1(runningClocks);
         } else {
             bindFromMe = runningClocks;
         }
