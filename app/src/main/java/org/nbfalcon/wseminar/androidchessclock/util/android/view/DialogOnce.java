@@ -2,8 +2,11 @@ package org.nbfalcon.wseminar.androidchessclock.util.android.view;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Nemo my name forevermore
@@ -32,7 +35,30 @@ public class DialogOnce {
         }
     }
 
+    public boolean haveDialog() {
+        return isDialogRunning;
+    }
+
     public interface DialogWithOnDismiss {
         void registerOnDismissListenerOnce(DialogInterface.OnDismissListener onDismiss);
+    }
+
+    public static class DialogWithOnDismissBase extends DialogFragment implements DialogWithOnDismiss {
+        private @Nullable DialogInterface.OnDismissListener onDismissCB = null;
+
+        @Override
+        public void registerOnDismissListenerOnce(DialogInterface.OnDismissListener onDismiss) {
+            this.onDismissCB = onDismiss;
+        }
+
+        @Override
+        public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
+            super.onDismiss(dialog);
+
+            if (onDismissCB != null) {
+                onDismissCB.onDismiss(dialog);
+                onDismissCB = null;
+            }
+        }
     }
 }

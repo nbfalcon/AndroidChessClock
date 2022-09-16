@@ -175,6 +175,10 @@ public class ChessClock implements Timer.TimerHandler, Parcelable {
         return clocksTemplate;
     }
 
+    public ClockPair getRunningClocks() {
+        return clocks;
+    }
+
     public void setClocks(ClockPairTemplate clocks) {
 //        assert currentState == State.INIT;
         clocksTemplate = clocks;

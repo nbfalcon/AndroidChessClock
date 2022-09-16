@@ -48,4 +48,9 @@ public class NoIncrement implements TimeControl, Parcelable {
     public long getTimeLeft() {
         return time;
     }
+
+    @Override
+    public void setTime(long deltaTMS) {
+        time = deltaTMS;
+    }
 }

@@ -14,6 +14,7 @@
             android:layout_height="@dimen/timeControlCustomizerSaveAsSize"
             android:ems="10"
             android:hint="Save as..."
+            android:autofillHints=""
             android:inputType="text"
             app:layout_constraintEnd_toStartOf="@+id/customTimeControlSaveAs"
             app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +65,7 @@
         </ViewFlipper>
 
         <CheckBox
-            android:id="@+id/set_for_both_players"
+            android:id="@+id/setForBothPlayers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Set for both players"

@@ -37,4 +37,9 @@ public class StagedClock implements TimeControl {
         if (current == null) return 0;
         return current.getTimeControl().getTimeLeft();
     }
+
+    @Override
+    public void setTime(long deltaTMS) {
+        // FIXME
+    }
 }

@@ -57,4 +57,8 @@ public class TimePickerWithSeconds extends LinearLayout {
         pickerMinutes.setValue((int) minutes);
         pickerSeconds.setValue((int) seconds);
     }
+
+    public void addTime(long deltaTS) {
+        setTimeSeconds(Math.max(0, getTimeSeconds() + deltaTS));
+    }
 }

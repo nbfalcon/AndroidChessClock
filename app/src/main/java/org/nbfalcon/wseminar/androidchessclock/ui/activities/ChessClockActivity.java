@@ -27,6 +27,7 @@ import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPai
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
 import org.nbfalcon.wseminar.androidchessclock.storage.StorageDBHelper;
+import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.AddSubPenaltyTimeDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.dialogs.TimeControlCustomizerDialog;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
@@ -41,6 +42,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private static final String PREF_LAST_TIME_CONTROL_SELECTED = "last_time_control";
     private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
+    private final AddSubPenaltyTimeDialog myPenaltyDialog = new AddSubPenaltyTimeDialog();
     private final DialogOnce onlyOneDialog = new DialogOnce();
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
@@ -180,6 +182,16 @@ public class ChessClockActivity extends AppCompatActivity {
                 }
             });
             myTimeControlCustomizer.show(getSupportFragmentManager(), null);
+        }
+    }
+
+    private void showAddTimePenaltyDialog(boolean whichPlayer) {
+        if (onlyOneDialog.withDialog(myPenaltyDialog)) {
+            myPenaltyDialog.bind(theClock.getRunningClocks(), (tp) -> {
+                tp.applyTo(theClock.getRunningClocks());
+                theClock.updateClocks();
+            });
+            myPenaltyDialog.show(getSupportFragmentManager(), null);
         }
     }
 
@@ -336,7 +348,13 @@ public class ChessClockActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 if (myClock.getState() == ChessClock.State.INIT) {
-                    showConfigureClockDialog(player);
+                    if (!onlyOneDialog.haveDialog()) {
+                        showConfigureClockDialog(player);
+                        return true;
+                    }
+                }
+                else if (myClock.getState() == ChessClock.State.PAUSED) {
+                    showAddTimePenaltyDialog(player);
                     return true;
                 }
                 return false;

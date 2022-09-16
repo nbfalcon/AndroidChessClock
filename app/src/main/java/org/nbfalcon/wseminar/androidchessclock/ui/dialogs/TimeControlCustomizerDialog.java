@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
@@ -27,7 +26,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtil
 
 // FIXME: while the dialog is running, the clock can be started; this is kinda broken
 // FIXME: do something cute/smart about auto-adjusting x in '15+x' when changing the seconds spinner
-public class TimeControlCustomizerDialog extends DialogFragment implements DialogOnce.DialogWithOnDismiss {
+public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissBase {
     private OnTimeSet onResult = null;
     private boolean forPlayer;
 
@@ -41,7 +40,6 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
     private boolean customTimeControlSaveAsClicked;
 
     private boolean settingWantSaveAs = true;
-    private @Nullable DialogInterface.OnDismissListener onDismiss;
 
     @NotNull
     public ClockPairTemplate getClockPairTemplate() {
@@ -96,7 +94,7 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
         ViewFlipper stagesFlipper = from.findViewById(R.id.stagesFlipper);
         ViewFlipperUtils.linkWithTabLayout(stagesTabs, stagesFlipper);
 
-        setForBothPlayers = from.findViewById(R.id.set_for_both_players);
+        setForBothPlayers = from.findViewById(R.id.setForBothPlayers);
         setForBothPlayers.setOnCheckedChangeListener((buttonView, isChecked) -> {
             TabLayout.Tab theOtherTab = stagesTabs.getTabAt((stagesTabs.getSelectedTabPosition() + 1) % 2);
             assert theOtherTab != null;
@@ -147,14 +145,8 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
         super.onDismiss(dialog);
 
         // Detach view for reuse; clicking "Ok" will cause the parent to be null, however (probably due to `mViewDestroyed`)
-        ViewGroup parent = (ViewGroup) rootView.getParent();
-        if (parent != null) {
-            parent.removeView(rootView);
-        }
-
-        if (onDismiss != null) {
-            onDismiss.onDismiss(dialog);
-            onDismiss = null;
+        if (rootView != null && rootView.getParent() != null) {
+            ((ViewGroup)rootView.getParent()).removeView(rootView);
         }
     }
 
@@ -185,11 +177,6 @@ public class TimeControlCustomizerDialog extends DialogFragment implements Dialo
 
     public HowExited getResultType() {
         return customTimeControlSaveAsClicked ? HowExited.CREATE_NEW : HowExited.OK;
-    }
-
-    @Override
-    public void registerOnDismissListenerOnce(DialogInterface.OnDismissListener onDismiss) {
-        this.onDismiss = onDismiss;
     }
 
     public enum HowExited {

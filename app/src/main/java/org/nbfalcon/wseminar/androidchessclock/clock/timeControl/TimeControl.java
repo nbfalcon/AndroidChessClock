@@ -6,4 +6,6 @@ public interface TimeControl {
     void onMoveFinished();
 
     long getTimeLeft();
+
+    void setTime(long deltaTMS);
 }

@@ -53,4 +53,9 @@ public class FisherIncrement implements TimeControl, Parcelable {
     public long getTimeLeft() {
         return timeLeft;
     }
+
+    @Override
+    public void setTime(long deltaTMS) {
+        timeLeft = deltaTMS;
+    }
 }
