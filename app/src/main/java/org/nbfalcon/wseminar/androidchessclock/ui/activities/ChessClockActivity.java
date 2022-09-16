@@ -187,7 +187,7 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private void showAddTimePenaltyDialog(boolean whichPlayer) {
         if (onlyOneDialog.withDialog(myPenaltyDialog)) {
-            myPenaltyDialog.bind(theClock.getRunningClocks(), (tp) -> {
+            myPenaltyDialog.bind(theClock.getRunningClocks(), whichPlayer, (tp) -> {
                 tp.applyTo(theClock.getRunningClocks());
                 theClock.updateClocks();
             });

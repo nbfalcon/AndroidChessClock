@@ -25,10 +25,14 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
     private @Nullable View rootView;
     private TabLayout whichPlayer;
     private TimePickerWithSeconds p1Time, p2Time;
-    private @Nullable ClockPair bindFromMe = null;
     // The milliseconds shouldn't get lost in the echo
     private int p1MS, p2MS;
+
+
+    private @Nullable ClockPair bindFromMe = null;
+    private boolean setWhichPlayer;
     private Consumer<TimePair> onAccept;
+
 
     @SuppressLint("InflateParams")
     @NonNull
@@ -60,6 +64,8 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
         p2Time.setTimeSeconds(p2T / 1000);
         p1MS = (int) (p1T % 1000);
         p2MS = (int) (p2T % 1000);
+
+        whichPlayer.selectTab(whichPlayer.getTabAt(!setWhichPlayer ? 0 : 1));
     }
 
     private void setupRootView(@NotNull View rootView) {
@@ -80,7 +86,8 @@ public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase 
         }
     }
 
-    public void bind(ClockPair runningClocks, Consumer<TimePair> onAcceptCB) {
+    public void bind(ClockPair runningClocks, boolean whichPlayer, Consumer<TimePair> onAcceptCB) {
+        setWhichPlayer = whichPlayer;
         if (rootView != null) {
             bindViews1(runningClocks);
         } else {
