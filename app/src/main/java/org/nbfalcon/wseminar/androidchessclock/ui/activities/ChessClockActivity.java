@@ -317,6 +317,7 @@ public class ChessClockActivity extends AppCompatActivity {
         public void onPlayerCurrent(boolean newCurrent) {
             player1Clock.setEnabled(!newCurrent);
             player2Clock.setEnabled(newCurrent);
+            (!newCurrent ? player1Clock : player2Clock).requestFocus();
         }
 
         @Override
