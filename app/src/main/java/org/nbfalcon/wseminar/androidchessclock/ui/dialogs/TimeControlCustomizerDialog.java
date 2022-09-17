@@ -24,20 +24,40 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomiz
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
+import java.io.Serializable;
+
 public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissBase {
+    private ClockPairTemplate bindFrom;
     private OnTimeSet onResult = null;
     private boolean forPlayer;
 
     private View rootView;
     private TimeControlStageCustomizer stage1, stage2;
     private AppCompatCheckBox setForBothPlayers;
-    private ClockPairTemplate bindFrom;
     private EditText customTimeControlName;
     private TabLayout stagesTabs;
     private View timeControlSaveAs;
     private boolean customTimeControlSaveAsClicked;
 
     private boolean settingWantSaveAs = true;
+
+    @Override
+    public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            bindFrom = savedInstanceState.getParcelable("bindFrom");
+            onResult = (OnTimeSet) savedInstanceState.getSerializable("onResult");
+            forPlayer = savedInstanceState.getBoolean("forPlayer");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull @NotNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("bindFrom", getClockPairTemplate());
+        outState.putSerializable("onResult", onResult);
+        outState.putBoolean("forPlayer", forPlayer);
+    }
 
     @NotNull
     public ClockPairTemplate getClockPairTemplate() {
@@ -205,7 +225,7 @@ public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissB
     }
 
     @FunctionalInterface
-    public interface OnTimeSet {
+    public interface OnTimeSet extends Serializable {
         void setTime(TimeControlCustomizerDialog dialog);
     }
 }

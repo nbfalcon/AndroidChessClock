@@ -89,8 +89,11 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
         addNewTimeControl.setOnClickListener((view) -> {
             if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
                 myTimeControlCustomizer.bind(false, newTimeControlPreset, (result) -> {
-                    ClockPairTemplate newClockPairTemplate = myTimeControlCustomizer.getClockPairTemplate();
-                    tcAdapter.add(newClockPairTemplate);
+                    ManageTimeControlsActivity self = (ManageTimeControlsActivity) result.getActivity();
+                    if (self == null) return;
+
+                    ClockPairTemplate newClockPairTemplate = self.myTimeControlCustomizer.getClockPairTemplate();
+                    self.tcAdapter.add(newClockPairTemplate);
                 });
                 myTimeControlCustomizer.setSettingWantSaveAs(false);
                 myTimeControlCustomizer.show(getSupportFragmentManager(), null);

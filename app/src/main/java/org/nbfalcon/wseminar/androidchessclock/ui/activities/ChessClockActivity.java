@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.ChessClock;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.BuiltinTimeControls;
-import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.SimpleHandlerTimerImpl;
 import org.nbfalcon.wseminar.androidchessclock.clock.timer.Timer;
@@ -113,9 +112,7 @@ public class ChessClockActivity extends AppCompatActivity {
         timeControlPicker.setOnItemSelectedListener(timeControlPickerOnSelection);
 
         View addSubTimeButton = findViewById(R.id.addSubTimeButton);
-        addSubTimeButton.setOnClickListener((ignored) -> {
-            showAddTimePenaltyDialog(theClock.getCurrentPlayer());
-        });
+        addSubTimeButton.setOnClickListener((ignored) -> showAddTimePenaltyDialog(theClock.getCurrentPlayer()));
 
         if (savedClock != null) {
             timeControlPicker.setSelectionNoListener(savedInstanceState.getInt("selectedTimeControl"));
@@ -180,22 +177,25 @@ public class ChessClockActivity extends AppCompatActivity {
         if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
             ClockPairTemplate prev = theClock.getClocks();
             myTimeControlCustomizer.bind(whichPlayer, prev, (result) -> {
+                ChessClockActivity self = (ChessClockActivity) result.getActivity();
+                if (self == null) return;
+
                 ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
 
                 if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
                     // Insert before special "Custom" item
-                    timeControlsList.add(newClockPairTemplate);
+                    self.timeControlsList.add(newClockPairTemplate);
                     // This will indirectly trigger setClocks
-                    timeControlPicker.setSelectionWithListener(timeControlPicker.getCount() - 2);
+                    self.timeControlPicker.setSelectionWithListener(self.timeControlPicker.getCount() - 2);
                 } else if (!prev.equalsNoName(newClockPairTemplate)) {
-                    prev.setName("Custom");
+                    newClockPairTemplate.setName("Custom");
 
                     // Force the "Custom" item to be selected (since our mode is not one of the saved ones)
-                    setTheCustomItem(newClockPairTemplate);
-                    int position = timeControlPicker.getCount() - 1;
-                    timeControlPicker.setSelectionNoListener(position);
-                    theClock.setClocks(theCustomItem);
-                    myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
+                    self.setTheCustomItem(newClockPairTemplate);
+                    int position = self.timeControlPicker.getCount() - 1;
+                    self.timeControlPicker.setSelectionNoListener(position);
+                    self.theClock.setClocks(self.theCustomItem);
+                    self.myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                 }
             });
             myTimeControlCustomizer.show(getSupportFragmentManager(), null);
