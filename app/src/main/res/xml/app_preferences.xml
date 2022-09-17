@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="enableGameOverSound"
-        android:title="Enable Game Over Sound" />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="enableLowTimeSound"
-        android:title="Enable Sound when low on Time"
-        android:summary="(&lt; 10s)" />
+    <PreferenceCategory>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="enableGameOverSound"
+            android:title="Enable Game Over Sound" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="enableLowTimeSound"
+            android:title="Enable Sound when low on Time"
+            android:summary="(&lt; 10s)" />
+    </PreferenceCategory>
+
+    <PreferenceCategory>
+        <Preference
+            android:title="Open Source licenses"
+            android:key="ossLicensesButton"
+            android:summary="Open Source licenses for the App's dependencies" />
+    </PreferenceCategory>
 </PreferenceScreen>
