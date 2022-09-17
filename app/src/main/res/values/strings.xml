@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Android Chess Clock</string>
+    <string name="app_name">Chess Clock</string>
 
     <string-array name="incrementTypes">
         <item>None</item>
