@@ -1,6 +1,7 @@
 package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -24,6 +25,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 import org.nbfalcon.wseminar.androidchessclock.util.android.activity.SettingsActivityBase;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListRecyclerAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.FragmentAlertDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
@@ -57,7 +59,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
         }
 
         RecyclerView timeControls = findViewById(R.id.manageTimeControlsList);
-        tcAdapter = new TimeControlsAdapter(changesResult);
+        tcAdapter = new TimeControlsAdapter(this, changesResult);
         timeControls.setAdapter(tcAdapter);
         new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
@@ -149,11 +151,17 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
         outState.putParcelable("newTimeControlPreset", newTimeControlPreset);
     }
 
-    private class TimeControlsAdapter extends SimpleMutableListRecyclerAdapter<ClockPairTemplate, TimeControlsAdapter.ViewHolder> {
+    private static class TimeControlsAdapter extends SimpleMutableListRecyclerAdapter<ClockPairTemplate, TimeControlsAdapter.ViewHolder> {
+        private final ManageTimeControlsActivity parent;
         private RecyclerView attachedTo = null;
 
-        private TimeControlsAdapter(SimpleMutableList<ClockPairTemplate> backingList) {
+        private TimeControlsAdapter(ManageTimeControlsActivity parent, SimpleMutableList<ClockPairTemplate> backingList) {
             super(backingList);
+            this.parent = parent;
+        }
+
+        public static TimeControlsAdapter maybeTheParentChanged(Activity newParent) {
+            return ((ManageTimeControlsActivity) newParent).tcAdapter;
         }
 
         @NonNull
@@ -182,7 +190,9 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
             this.attachedTo = recyclerView;
         }
 
-        public void handleOnly1MoreItemRemaining() {
+        @Override
+        public void remove(int index) {
+            super.remove(index);
             // We have one more left, so disable the delete buttons
             if (getItemCount() == 1) {
                 ViewHolder remaining = (ViewHolder) attachedTo.findViewHolderForAdapterPosition(0);
@@ -209,7 +219,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
 
             public ViewHolder(@NonNull @NotNull View itemView) {
                 super(itemView);
-                this.label = itemView.findViewById(R.id.label);
+                label = itemView.findViewById(R.id.label);
                 label.addTextChangedListener(new TextWatcher() {
                     @Override
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -230,43 +240,39 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
                     }
                 });
 
-                this.editRow = itemView.findViewById(R.id.editRow);
+                editRow = itemView.findViewById(R.id.editRow);
                 editRow.setOnClickListener((view) -> {
-                    if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
-                        ClockPairTemplate prev = get(getAdapterPosition());
-                        myTimeControlCustomizer.bind(false, prev, (result) -> {
-                            ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
+                    if (parent.onlyOneDialog.ok()) {
+                        int position = getAdapterPosition();
+                        ClockPairTemplate prev = get(position);
+                        parent.myTimeControlCustomizer.bind(false, prev, (result) -> {
+                            TimeControlsAdapter self = maybeTheParentChanged(result.getActivity());
 
+                            ClockPairTemplate newClockPairTemplate = result.getClockPairTemplate();
                             if (result.getResultType() == TimeControlCustomizerDialog.HowExited.CREATE_NEW) {
-                                add(newClockPairTemplate);
+                                self.add(newClockPairTemplate);
                             } else if (!prev.equals(newClockPairTemplate)) {
-                                set(getAdapterPosition(), newClockPairTemplate);
+                                self.set(position, newClockPairTemplate);
                             }
                         });
-                        myTimeControlCustomizer.setSettingWantSaveAs(true);
-                        myTimeControlCustomizer.show(getSupportFragmentManager(), null);
+                        parent.myTimeControlCustomizer.setSettingWantSaveAs(true);
+                        parent.onlyOneDialog.show(parent.myTimeControlCustomizer, parent.getSupportFragmentManager());
                     }
                 });
-                this.deleteRow = itemView.findViewById(R.id.deleteRow);
+                deleteRow = itemView.findViewById(R.id.deleteRow);
                 deleteRow.setOnClickListener((view) -> {
                     // Don't delete the last item; that's illegal
                     if (getItemCount() <= 1) return;
 
-                    AlertDialog.Builder confirmBuilder = onlyOneDialog.withBuilder(itemView.getContext());
-                    if (confirmBuilder != null) {
-                        String message = String.format("Really delete time control '%s' forever?",
-                                get(getAdapterPosition()));
-                        AlertDialog confirm = confirmBuilder
+                    if (parent.onlyOneDialog.ok()) {
+                        int position = getAdapterPosition();
+                        String message = String.format("Really delete time control '%s' forever?", get(position));
+                        parent.onlyOneDialog.show(new FragmentAlertDialog("Really delete?", "Ok", "Cancel", message)
                                 .setIcon(R.drawable.ic_material_delete_forever)
-                                .setTitle("Really delete?")
-                                .setMessage(message)
-                                .setPositiveButton("Ok", (dialog, which) -> {
-                                    remove(getAdapterPosition());
-                                    handleOnly1MoreItemRemaining();
-                                })
-                                .setNegativeButton("Cancel", null)
-                                .create();
-                        confirm.show();
+                                .then((dialog) -> {
+                                    TimeControlsAdapter self = maybeTheParentChanged(dialog.getActivity());
+                                    self.remove(position);
+                                }), parent.getSupportFragmentManager());
                     }
                 });
             }

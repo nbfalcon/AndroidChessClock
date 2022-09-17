@@ -103,7 +103,7 @@ public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissB
                 String actualTCName = getTimeControlName();
                 boolean withBar = actualTCName.contains("|");
                 @Nullable String prevShouldBe = tcName(prevTimeMS, prevIncrMS, withBar);
-                if (prevShouldBe != null && actualTCName.equals(prevShouldBe)) {
+                if (actualTCName.equals(prevShouldBe)) {
                     String newTCN = tcName(newTimeMS, newIncrMS, withBar);
                     if (newTCN != null) {
                         customTimeControlName.setText(newTCN);

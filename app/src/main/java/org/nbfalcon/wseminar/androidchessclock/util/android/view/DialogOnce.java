@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,8 +18,7 @@ public class DialogOnce {
     public @Nullable AlertDialog.Builder withBuilder(Context context) {
         if (isDialogRunning) {
             return null;
-        }
-        else {
+        } else {
             isDialogRunning = true;
             return new AlertDialog.Builder(context).setOnDismissListener(dialog -> isDialogRunning = false);
         }
@@ -29,14 +29,23 @@ public class DialogOnce {
             isDialogRunning = true;
             dialog.registerOnDismissListenerOnce(dialog1 -> isDialogRunning = false);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     public boolean haveDialog() {
         return isDialogRunning;
+    }
+
+    public boolean ok() {
+        return !isDialogRunning;
+    }
+
+    public <T extends DialogFragment & DialogWithOnDismiss> void show(T showMe, FragmentManager fragmentManager) {
+        isDialogRunning = true;
+        showMe.registerOnDismissListenerOnce(dialog1 -> isDialogRunning = false);
+        showMe.show(fragmentManager, null);
     }
 
     public interface DialogWithOnDismiss {
