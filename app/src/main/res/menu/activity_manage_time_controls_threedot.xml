@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menuDiscardChanges"
+        android:icon="@drawable/ic_material_close"
+        android:title="Discard changes and exit"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/menuResetTimeControls"
         android:icon="@drawable/ic_material_reset_device"
         android:title="Reset Time Controls to Default"

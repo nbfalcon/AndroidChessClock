@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +39,8 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
     private ChangeCollectorList<ClockPairTemplate> changesResult;
     private ClockPairTemplate newTimeControlPreset;
     private TimeControlsAdapter tcAdapter;
+
+    private boolean cancelled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +100,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
 
     @Override
     public void finish() {
-        setResultForFinish();
+        if (!cancelled) setResultForFinish();
         super.finish();
     }
 
@@ -113,24 +114,40 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
     public boolean onCreateOptionsMenu(@NotNull Menu menu) {
         getMenuInflater().inflate(R.menu.activity_manage_time_controls_threedot, menu);
 
+        menu.findItem(R.id.menuDiscardChanges).setOnMenuItemClickListener(item -> {
+            if (onlyOneDialog.ok()) {
+                FragmentAlertDialog confirm = new FragmentAlertDialog("Discard changes and return to Chess Clock", "Ok", "Cancel",
+                        "Discard all time control modifications done here and return to the main Chess Clock screen.")
+                        .setIcon(R.drawable.ic_material_close)
+                        .then((dialog) -> {
+                            ManageTimeControlsActivity self = (ManageTimeControlsActivity) dialog.getActivity();
+                            if (self != null) {
+                                self.cancelled = true;
+                                self.finish();
+                            }
+                        });
+                onlyOneDialog.show(confirm, getSupportFragmentManager());
+                return true;
+            }
+            return false;
+        });
         menu.findItem(R.id.menuResetTimeControls).setOnMenuItemClickListener(item -> {
-            AlertDialog.Builder confirmBuilder = onlyOneDialog.withBuilder(this);
-            if (confirmBuilder != null) {
-                @SuppressLint("NotifyDataSetChanged") AlertDialog confirm = confirmBuilder
+            if (onlyOneDialog.ok()) {
+                @SuppressLint("NotifyDataSetChanged")
+                FragmentAlertDialog confirm = new FragmentAlertDialog("Reset Time Controls", "Ok", "Cancel",
+                        "Really reset all time controls to default?\nYour custom time controls will be deleted.")
                         .setIcon(R.drawable.ic_material_reset_device)
-                        .setTitle("Reset Time Controls")
-                        .setMessage("Really reset all time controls to default?\nYour custom time controls will be deleted.")
-                        .setPositiveButton("Ok", (dialog, which) -> {
-                            changesResult.clear();
+                        .then((dialog) -> {
+                            ManageTimeControlsActivity self = (ManageTimeControlsActivity) dialog.getActivity();
+                            if (self == null) return;
+                            self.changesResult.clear();
                             for (ClockPairTemplate template : BuiltinTimeControls.BUILTIN) {
-                                changesResult.add(template);
+                                self.changesResult.add(template);
                             }
                             // Well, the entire dataset /has/ changed
-                            tcAdapter.notifyDataSetChanged();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create();
-                confirm.show();
+                            self.tcAdapter.notifyDataSetChanged();
+                        });
+                onlyOneDialog.show(confirm, getSupportFragmentManager());
                 return true;
             }
             return false;
@@ -266,7 +283,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
 
                     if (parent.onlyOneDialog.ok()) {
                         int position = getAdapterPosition();
-                        String message = String.format("Really delete time control '%s' forever?", get(position));
+                        String message = String.format("Really delete time control '%s'?", get(position));
                         parent.onlyOneDialog.show(new FragmentAlertDialog("Really delete?", "Ok", "Cancel", message)
                                 .setIcon(R.drawable.ic_material_delete_forever)
                                 .then((dialog) -> {

@@ -134,10 +134,11 @@ public class ChessClockActivity extends AppCompatActivity {
 
         manageTimeControlsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             Intent data = result.getData();
-            assert data != null;
-            ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
-            changes.applyTo(timeControlsList.getBackingList());
-            timeControlsList.notifyDataSetChanged();
+            if (data != null) {
+                ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
+                changes.applyTo(timeControlsList.getBackingList());
+                timeControlsList.notifyDataSetChanged();
+            }
         });
     }
 
