@@ -135,6 +135,12 @@ public class ChessClockActivity extends AppCompatActivity {
                 ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
                 changes.applyTo(timeControlsList.getBackingList());
                 timeControlsList.notifyDataSetChanged();
+
+                ClockPairTemplate changedCurrentSelection = (ClockPairTemplate)timeControlPicker.getSelectedItem();
+                if (changedCurrentSelection != theClock.getClocks()
+                        && theClock.getState() == ChessClock.State.INIT) {
+                    theClock.setClocks(changedCurrentSelection);
+                }
             }
         });
     }
@@ -281,7 +287,10 @@ public class ChessClockActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable("theClock", theClock);
+        // The custom item isn't selected and the clock is in a non-default state; this means we must store its state
+        if (theClock.getState() != ChessClock.State.INIT || timeControlPicker.getSelectedItemPosition() != timeControlPicker.getCount() - 1) {
+            outState.putParcelable("theClock", theClock);
+        }
         outState.putInt("selectedTimeControl", timeControlPicker.getSelectedItemPosition());
     }
 
