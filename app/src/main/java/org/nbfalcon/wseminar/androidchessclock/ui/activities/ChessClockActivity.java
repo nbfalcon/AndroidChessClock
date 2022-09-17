@@ -136,7 +136,7 @@ public class ChessClockActivity extends AppCompatActivity {
                 changes.applyTo(timeControlsList.getBackingList());
                 timeControlsList.notifyDataSetChanged();
 
-                ClockPairTemplate changedCurrentSelection = (ClockPairTemplate)timeControlPicker.getSelectedItem();
+                ClockPairTemplate changedCurrentSelection = (ClockPairTemplate) timeControlPicker.getSelectedItem();
                 if (changedCurrentSelection != theClock.getClocks()
                         && theClock.getState() == ChessClock.State.INIT) {
                     theClock.setClocks(changedCurrentSelection);
@@ -151,32 +151,33 @@ public class ChessClockActivity extends AppCompatActivity {
 
         menuRestartGame = menu.findItem(R.id.menuRestartGame);
         menuRestartGame.setEnabled(theClock.getState() == ChessClock.State.PAUSED || theClock.getState() == ChessClock.State.GAME_OVER);
-        menuRestartGame.setOnMenuItemClickListener(menuItem -> {
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menuRestartGame) {
             if (theClock.getState() == ChessClock.State.PAUSED || theClock.getState() == ChessClock.State.GAME_OVER) {
                 theClock.onReset();
                 return true;
             }
             return false;
-        });
-
-        MenuItem menuManageTimeControls = menu.findItem(R.id.menuManageTimeControls);
-        menuManageTimeControls.setOnMenuItemClickListener(menuItem -> {
+        } else if (id == R.id.menuManageTimeControls) {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
                     timeControlsList.getBackingList().toArray(ClockPairTemplate.EMPTY_ARRAY));
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeControlPicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
-        });
-
-        MenuItem menuSettings = menu.findItem(R.id.menuSettings);
-        menuSettings.setOnMenuItemClickListener(menuItem -> {
+        } else if (id == R.id.menuSettings) {
             Intent appPreferencesActivity = new Intent(this, AppPreferencesActivity.class);
             startActivity(appPreferencesActivity);
             return true;
-        });
-
-        return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {

@@ -6,10 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
@@ -116,8 +113,13 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
     @Override
     public boolean onCreateOptionsMenu(@NotNull Menu menu) {
         getMenuInflater().inflate(R.menu.activity_manage_time_controls_threedot, menu);
+        return true;
+    }
 
-        menu.findItem(R.id.menuDiscardChanges).setOnMenuItemClickListener(item -> {
+    @Override
+    public boolean onOptionsItemSelected(@NonNull @NotNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menuDiscardChanges) {
             if (onlyOneDialog.ok()) {
                 FragmentAlertDialog confirm = new FragmentAlertDialog("Discard changes and return to Chess Clock", "Ok", "Cancel",
                         "Discard all time control modifications done here and return to the main Chess Clock screen.")
@@ -133,8 +135,7 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
                 return true;
             }
             return false;
-        });
-        menu.findItem(R.id.menuResetTimeControls).setOnMenuItemClickListener(item -> {
+        } else if (id == R.id.menuResetTimeControls) {
             if (onlyOneDialog.ok()) {
                 @SuppressLint("NotifyDataSetChanged")
                 FragmentAlertDialog confirm = new FragmentAlertDialog("Reset Time Controls", "Ok", "Cancel",
@@ -154,9 +155,9 @@ public class ManageTimeControlsActivity extends SettingsActivityBase {
                 return true;
             }
             return false;
-        });
-
-        return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
