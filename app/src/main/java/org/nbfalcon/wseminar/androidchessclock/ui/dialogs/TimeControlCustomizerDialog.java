@@ -15,18 +15,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.ClockPairTemplate;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.template.SingleStageTimeControlTemplate;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimeControlStageCustomizer;
-import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
 import java.io.Serializable;
 
-public class TimeControlCustomizerDialog extends DialogOnce.DialogWithOnDismissBase {
+public class TimeControlCustomizerDialog extends DialogFragment {
     private ClockPairTemplate bindFrom;
     private OnTimeSet onResult = null;
     private boolean forPlayer;

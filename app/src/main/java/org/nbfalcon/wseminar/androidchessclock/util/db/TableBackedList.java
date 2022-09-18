@@ -22,7 +22,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         this.db = db;
         this.table = table;
         this.columns = columns;
-        load(); // FIXME: async
+        load();
     }
 
     @SuppressWarnings("SameParameterValue")

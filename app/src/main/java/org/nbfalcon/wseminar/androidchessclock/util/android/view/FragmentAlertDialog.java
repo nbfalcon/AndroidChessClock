@@ -7,11 +7,12 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.DialogFragment;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
-public class FragmentAlertDialog extends DialogOnce.DialogWithOnDismissBase {
+public class FragmentAlertDialog extends DialogFragment {
     private String title;
     private String ok;
     private String cancel;

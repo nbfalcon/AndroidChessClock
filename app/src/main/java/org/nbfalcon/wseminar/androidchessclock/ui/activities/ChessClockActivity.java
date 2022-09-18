@@ -36,8 +36,8 @@ import org.nbfalcon.wseminar.androidchessclock.ui.views.StartButton;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimerView;
 import org.nbfalcon.wseminar.androidchessclock.util.android.adapter.SimpleMutableListAdapter;
 import org.nbfalcon.wseminar.androidchessclock.util.android.sound.SoundUtil;
-import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.NoListenerSelection;
+import org.nbfalcon.wseminar.androidchessclock.util.android.view.OnlyOneDialog;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.ChangeCollectorList;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
@@ -52,7 +52,6 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private final TimeControlCustomizerDialog myTimeControlCustomizer = new TimeControlCustomizerDialog();
     private final AddSubPenaltyTimeDialog myPenaltyDialog = new AddSubPenaltyTimeDialog();
-    private final DialogOnce onlyOneDialog = new DialogOnce();
     private ChessClock theClock;
     private @Nullable MenuItem menuRestartGame;
     private SimpleMutableListAdapter<ClockPairTemplate> timeControlsList;
@@ -181,7 +180,7 @@ public class ChessClockActivity extends AppCompatActivity {
     }
 
     private void showConfigureClockDialog(boolean whichPlayer) {
-        if (onlyOneDialog.withDialog(myTimeControlCustomizer)) {
+        if (OnlyOneDialog.ok(getSupportFragmentManager())) {
             ClockPairTemplate prev = theClock.getClocks();
             myTimeControlCustomizer.bind(whichPlayer, prev, (result) -> {
                 ChessClockActivity self = (ChessClockActivity) result.getActivity();
@@ -205,7 +204,7 @@ public class ChessClockActivity extends AppCompatActivity {
                     self.myActivityPreferences.edit().putInt(PREF_LAST_TIME_CONTROL_SELECTED, position).apply();
                 }
             });
-            myTimeControlCustomizer.show(getSupportFragmentManager(), null);
+            OnlyOneDialog.show(myTimeControlCustomizer, getSupportFragmentManager());
         }
     }
 
@@ -256,12 +255,12 @@ public class ChessClockActivity extends AppCompatActivity {
 
     private void showAddTimePenaltyDialog(boolean whichPlayer) {
         if (theClock.getState() == ChessClock.State.TICKING) theClock.onPause();
-        if (onlyOneDialog.withDialog(myPenaltyDialog)) {
+        if (OnlyOneDialog.ok(getSupportFragmentManager())) {
             myPenaltyDialog.bind(theClock.getRunningClocks(), whichPlayer, (tp) -> {
                 tp.applyTo(theClock.getRunningClocks());
                 theClock.updateClocks();
             });
-            myPenaltyDialog.show(getSupportFragmentManager(), null);
+            OnlyOneDialog.show(myPenaltyDialog, getSupportFragmentManager());
             if (theClock.getState() == ChessClock.State.GAME_OVER) {
                 theClock.onResumeFromDeath();
             }
@@ -411,7 +410,10 @@ public class ChessClockActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                myClock.onPressPlayerClockButton(player);
+                // Don't start the clock while a dialog is running
+                if (OnlyOneDialog.ok(getSupportFragmentManager())) {
+                    myClock.onPressPlayerClockButton(player);
+                }
             }
         }
 
@@ -425,7 +427,7 @@ public class ChessClockActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 if (myClock.getState() == ChessClock.State.INIT) {
-                    if (!onlyOneDialog.haveDialog()) {
+                    if (OnlyOneDialog.ok(getSupportFragmentManager())) {
                         showConfigureClockDialog(player);
                         return true;
                     }

@@ -12,16 +12,16 @@ import android.view.ViewGroup;
 import android.widget.ViewFlipper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.R;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.ui.views.TimePickerWithSeconds;
 import org.nbfalcon.wseminar.androidchessclock.util.Consumer;
-import org.nbfalcon.wseminar.androidchessclock.util.android.view.DialogOnce;
 import org.nbfalcon.wseminar.androidchessclock.util.android.view.ViewFlipperUtils;
 
-public class AddSubPenaltyTimeDialog extends DialogOnce.DialogWithOnDismissBase {
+public class AddSubPenaltyTimeDialog extends DialogFragment {
     private @Nullable View rootView;
     private TabLayout whichPlayer;
     private TimePickerWithSeconds p1Time, p2Time;
