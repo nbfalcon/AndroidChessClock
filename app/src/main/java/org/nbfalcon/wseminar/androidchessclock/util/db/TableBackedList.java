@@ -11,6 +11,7 @@ import java.util.List;
 
 public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public static final long SORT_ID_GAP = 1000;
+    public static final int SORT_ID_BASE = 1;
     private final ArrayList<E> items = new ArrayList<>();
     private final ArrayList<Long> sortIds = new ArrayList<>();
 
@@ -46,7 +47,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     @Override
     public void add(E item) {
-        long lastId = !sortIds.isEmpty() ? sortIds.get(sortIds.size() - 1) : 1;
+        long lastId = !sortIds.isEmpty() ? sortIds.get(sortIds.size() - 1) : SORT_ID_BASE;
         long newId = lastId + SORT_ID_GAP;
         sortIds.add(newId);
 
@@ -65,8 +66,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public void add(int index, E item) {
         db.beginTransaction();
 
-        // FIXME: leverage a gap when possible
-        db.execSQL("UPDATE timeControls SET sortId = sortId + " + SORT_ID_GAP + " WHERE sortId > ?", new Object[]{sortIds.get(index)});
+        insertSortIdAt(index);
 
         ContentValues fields = new ContentValues();
         bindToDB(item, fields);
@@ -78,11 +78,28 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         db.endTransaction();
 
         items.add(index, item);
-        sortIds.add(index, sortIds.get(index));
         List<Long> laterSortIDs = sortIds.subList(index + 1, sortIds.size());
         for (int i = 0; i < laterSortIDs.size(); i++) {
             laterSortIDs.set(i, laterSortIDs.get(i) + 10);
         }
+    }
+
+    private void insertSortIdAt(int index) {
+        long mySortId;
+        if (sortIds.isEmpty()) {
+            mySortId = SORT_ID_BASE;
+        } else if (index == 0) {
+            mySortId = sortIds.get(0) - SORT_ID_GAP;
+        } else if (index == sortIds.size()) {
+            mySortId = sortIds.get(sortIds.size() - 1) + SORT_ID_GAP;
+        } else if (sortIds.get(index - 1) < sortIds.get(index) - 1) {
+            // We have a gap
+            mySortId = (sortIds.get(index - 1) + sortIds.get(index)) / 2;
+        } else {
+            mySortId = sortIds.get(index);
+            db.execSQL("UPDATE timeControls SET sortId = sortId + " + SORT_ID_GAP + " WHERE sortId >= ?", new Object[]{mySortId});
+        }
+        sortIds.add(index, mySortId);
     }
 
     @Override
@@ -121,6 +138,11 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     @Override
     public void move(int from, int to) {
+//        if (to == from + 1 || to == from - 1) {
+//            Collections.swap(items, from, to);
+//            Collections.swap(sortIds, from, to);
+//            db.execSQL("UPDATE " + table);
+//        }
         // FIXME: can we optimize this?
         SimpleMutableList.super.move(from, to);
     }
