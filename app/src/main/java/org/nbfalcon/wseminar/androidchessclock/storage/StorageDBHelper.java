@@ -38,8 +38,13 @@ public class StorageDBHelper extends SQLiteOpenHelper {
             }
 
             @Override
-            protected void saveId(ClockPairTemplate item, long rowId) {
+            protected void saveRowId(ClockPairTemplate item, long rowId) {
                 item.dbRowId = rowId;
+            }
+
+            @Override
+            protected long getRowId(ClockPairTemplate item) {
+                return item.dbRowId;
             }
 
             @Override

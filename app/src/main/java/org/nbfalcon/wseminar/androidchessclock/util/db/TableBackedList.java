@@ -7,6 +7,7 @@ import org.nbfalcon.wseminar.androidchessclock.util.CollectionUtilsEx;
 import org.nbfalcon.wseminar.androidchessclock.util.collections.SimpleMutableList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class TableBackedList<E> implements SimpleMutableList<E> {
@@ -31,7 +32,9 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     protected abstract void bindToDB(E item, ContentValues bindTo);
 
-    protected abstract void saveId(E item, long rowId);
+    protected abstract void saveRowId(E item, long rowId);
+
+    protected abstract long getRowId(E item);
 
     private void load() {
         assert sortIds.isEmpty() && items.isEmpty();
@@ -56,7 +59,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         fields.put("sortId", newId);
 
         long rowId = db.insert(table, null, fields);
-        saveId(item, rowId);
+        saveRowId(item, rowId);
 
         items.add(item);
         sortIds.add(newId);
@@ -66,13 +69,14 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
     public void add(int index, E item) {
         db.beginTransaction();
 
-        insertSortIdAt(index);
+        long mySortId = acquireSortIdAt(index);
+        sortIds.add(index, mySortId);
 
         ContentValues fields = new ContentValues();
         bindToDB(item, fields);
         fields.put("sortId", sortIds.get(index));
         long rowId = db.insert(table, null, fields);
-        saveId(item, rowId);
+        saveRowId(item, rowId);
 
         db.setTransactionSuccessful();
         db.endTransaction();
@@ -84,7 +88,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
         }
     }
 
-    private void insertSortIdAt(int index) {
+    private long acquireSortIdAt(int index) {
         long mySortId;
         if (sortIds.isEmpty()) {
             mySortId = SORT_ID_BASE;
@@ -99,7 +103,7 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
             mySortId = sortIds.get(index);
             db.execSQL("UPDATE timeControls SET sortId = sortId + " + SORT_ID_GAP + " WHERE sortId >= ?", new Object[]{mySortId});
         }
-        sortIds.add(index, mySortId);
+        return mySortId;
     }
 
     @Override
@@ -138,13 +142,25 @@ public abstract class TableBackedList<E> implements SimpleMutableList<E> {
 
     @Override
     public void move(int from, int to) {
-//        if (to == from + 1 || to == from - 1) {
-//            Collections.swap(items, from, to);
-//            Collections.swap(sortIds, from, to);
-//            db.execSQL("UPDATE " + table);
-//        }
-        // FIXME: can we optimize this?
-        SimpleMutableList.super.move(from, to);
+        if (to == from + 1 || to == from - 1) {
+            long aid = getRowId(items.get(from)), bid = getRowId(items.get(to));
+
+            // Just swap rowids
+            db.beginTransaction();
+            db.execSQL("UPDATE " + table + " SET rowid = (case WHEN rowid = ? THEN -? ELSE -? END) WHERE rowid IN (?, ?)",
+                    new Object[]{aid, bid, aid, aid, bid});
+            db.execSQL("UPDATE " + table + " SET rowid = -rowid WHERE rowid < 0");
+            db.setTransactionSuccessful();
+            db.endTransaction();
+
+            Collections.swap(items, from, to);
+        }
+        else {
+            long myNewSortId = acquireSortIdAt(to);
+            sortIds.set(from, myNewSortId);
+            CollectionUtilsEx.move(sortIds, from, to);
+            CollectionUtilsEx.move(items, from, to);
+        }
     }
 
     @Override
