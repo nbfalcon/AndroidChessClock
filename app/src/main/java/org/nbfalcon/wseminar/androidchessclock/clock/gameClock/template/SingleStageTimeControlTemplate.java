@@ -38,9 +38,6 @@ public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parc
     public TimeControl createPlayerClock() {
         TimeControl timeControl;
         switch (this.type) {
-            case NONE:
-                timeControl = new NoIncrement(time);
-                break;
             case BRONSTEIN:
                 timeControl = new BronsteinDelay(time, increment);
                 break;

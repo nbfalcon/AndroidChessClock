@@ -2,7 +2,6 @@
     <string name="app_name">Chess Clock</string>
 
     <string-array name="incrementTypes">
-        <item>None</item>
         <item>Bronstein</item>
         <item>Fisher</item>
         <item>Simple</item>

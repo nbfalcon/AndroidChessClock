@@ -15,9 +15,6 @@ public class TimeControlStageTemplate extends SingleStageTimeControlTemplate {
     public TimeControlStage createTimeControlStage() {
         TimeControl timeControl;
         switch (this.type) {
-            case NONE:
-                timeControl = new NoIncrement(time);
-                break;
             case BRONSTEIN:
                 timeControl = new BronsteinDelay(time, increment);
                 break;
@@ -34,6 +31,6 @@ public class TimeControlStageTemplate extends SingleStageTimeControlTemplate {
     }
 
     public enum Type {
-        NONE, BRONSTEIN, FISHER, SIMPLE
+        BRONSTEIN, FISHER, SIMPLE
     }
 }
