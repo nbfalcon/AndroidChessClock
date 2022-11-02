@@ -132,13 +132,27 @@ public class ChessClockActivity extends AppCompatActivity {
             Intent data = result.getData();
             if (data != null) {
                 ChangeCollectorList.ChangeList<ClockPairTemplate> changes = data.getExtras().getParcelable(ManageTimeControlsActivity.KEY_RESULT_CHANGES);
+                Object previouslySelected = timeControlPicker.getSelectedItem();
                 changes.applyTo(timeControlsList.getBackingList());
                 timeControlsList.notifyDataSetChanged();
 
-                ClockPairTemplate changedCurrentSelection = (ClockPairTemplate) timeControlPicker.getSelectedItem();
-                if (changedCurrentSelection != theClock.getClocks()
-                        && theClock.getState() == ChessClock.State.INIT) {
-                    theClock.setClocks(changedCurrentSelection);
+
+                ClockPairTemplate currentlySelected;
+                if (timeControlPicker.getSelectedItem() == theCustomItem && previouslySelected != theCustomItem) {
+                    // We have accidentally selected the custom item
+                    int index = timeControlsList.getBackingList().size() - 1;
+                    timeControlPicker.setSelectionNoListener(index);
+                    currentlySelected = timeControlsList.get(index);
+                } else {
+                    currentlySelected = (ClockPairTemplate) timeControlPicker.getSelectedItem();
+                }
+
+                if (currentlySelected != theClock.getClocks()) {
+                    if (theClock.getState() == ChessClock.State.INIT) {
+                        theClock.setClocks(currentlySelected);
+                    } else {
+                        theClock.setClocksTemplate(currentlySelected);
+                    }
                 }
             }
         });
