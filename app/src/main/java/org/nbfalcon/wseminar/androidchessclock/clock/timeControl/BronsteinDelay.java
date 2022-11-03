@@ -50,8 +50,8 @@ public class BronsteinDelay implements TimeControl, Parcelable {
 
     @Override
     public void onMoveFinished() {
-        elapsedThisMove = 0;
         timeLeft += Math.min(increment, elapsedThisMove);
+        elapsedThisMove = 0;
     }
 
     @Override
