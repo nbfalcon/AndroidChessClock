@@ -5,7 +5,9 @@ import android.os.Parcelable;
 import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.clock.timeControl.*;
 
-public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parcelable {
+import java.io.Serializable;
+
+public class SingleStageTimeControlTemplate implements PlayerClockTemplate, Parcelable, Serializable {
     public static final Creator<SingleStageTimeControlTemplate> CREATOR = new Creator<SingleStageTimeControlTemplate>() {
         @Override
         public SingleStageTimeControlTemplate createFromParcel(Parcel in) {

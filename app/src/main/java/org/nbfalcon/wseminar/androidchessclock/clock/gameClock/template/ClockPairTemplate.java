@@ -8,9 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.nbfalcon.wseminar.androidchessclock.clock.gameClock.ClockPair;
 import org.nbfalcon.wseminar.androidchessclock.util.android.compat.ParcelCompatEx;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ClockPairTemplate implements Parcelable {
+public class ClockPairTemplate implements Parcelable, Serializable {
     public static final Creator<ClockPairTemplate> CREATOR = new Creator<ClockPairTemplate>() {
         @Override
         public ClockPairTemplate createFromParcel(Parcel in) {

@@ -3,10 +3,7 @@ package org.nbfalcon.wseminar.androidchessclock.ui.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Parcel;
+import android.os.*;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -181,7 +178,7 @@ public class ChessClockActivity extends AppCompatActivity {
             Intent manageTimeControls = new Intent(this, ManageTimeControlsActivity.class);
             manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_CUSTOM_TIME_CONTROLS,
                     timeControlsList.getBackingList().toArray(ClockPairTemplate.EMPTY_ARRAY));
-            manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (ClockPairTemplate) timeControlPicker.getSelectedItem());
+            manageTimeControls.putExtra(ManageTimeControlsActivity.KEY_NEW_TIME_CONTROL_PRESET, (Parcelable) timeControlPicker.getSelectedItem());
             manageTimeControlsLauncher.launch(manageTimeControls);
             return true;
         } else if (id == R.id.menuSettings) {
